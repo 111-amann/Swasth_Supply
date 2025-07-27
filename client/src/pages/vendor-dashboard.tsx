@@ -357,13 +357,23 @@ export default function VendorDashboard({ userProfile }: VendorDashboardProps) {
                             </CardDescription>
                           </div>
                           <Badge
-                            variant={
-                              order.status === "delivered" ? "default" :
-                              order.status === "cancelled" ? "destructive" :
-                              "secondary"
+                            className={
+                              order.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                              order.status === "confirmed" ? "bg-blue-100 text-blue-800" :
+                              order.status === "preparing" ? "bg-purple-100 text-purple-800" :
+                              order.status === "shipped" ? "bg-indigo-100 text-indigo-800" :
+                              order.status === "delivered" ? "bg-green-100 text-green-800" :
+                              order.status === "cancelled" ? "bg-red-100 text-red-800" :
+                              "bg-gray-100 text-gray-800"
                             }
                           >
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            {order.status === "pending" ? "⏳ Pending Confirmation" :
+                             order.status === "confirmed" ? "✅ Confirmed by Supplier" :
+                             order.status === "preparing" ? "🔄 Being Prepared" :
+                             order.status === "shipped" ? "🚚 On the Way" :
+                             order.status === "delivered" ? "📦 Delivered" :
+                             order.status === "cancelled" ? "❌ Cancelled" :
+                             order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -398,7 +408,9 @@ export default function VendorDashboard({ userProfile }: VendorDashboardProps) {
                                 <p className="text-sm"><strong>Order Notes:</strong> {order.notes}</p>
                               )}
                               {(order as any).supplierNotes && (
-                                <p className="text-sm"><strong>Supplier Update:</strong> {(order as any).supplierNotes}</p>
+                                <div className="bg-blue-50 p-2 rounded text-sm">
+                                  <p><strong>📢 Supplier Update:</strong> {(order as any).supplierNotes}</p>
+                                </div>
                               )}
                             </div>
                           )}

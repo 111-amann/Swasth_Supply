@@ -208,44 +208,96 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
               )}
 
               {/* Status Update Actions */}
-              {getAvailableActions(order.status).length > 0 && (
+              {(order.status !== "delivered" && order.status !== "cancelled") && (
                 <div className="pt-4 border-t space-y-3">
                   <div>
                     <Label htmlFor={`notes-${order.id}`} className="text-sm font-medium">
-                      Update Notes (Optional)
+                      Message to Vendor (Optional)
                     </Label>
                     <Textarea
                       id={`notes-${order.id}`}
-                      placeholder="Add any notes about this order update..."
+                      placeholder={
+                        order.status === "pending" ? "Add confirmation details or expected delivery time..." :
+                        order.status === "confirmed" ? "Add preparation timeline or special instructions..." :
+                        order.status === "preparing" ? "Add estimated shipping time..." :
+                        order.status === "shipped" ? "Add tracking details or delivery estimate..." :
+                        "Add any additional notes for the vendor..."
+                      }
                       value={updateNotes[order.id] || ""}
                       onChange={(e) => setUpdateNotes(prev => ({
                         ...prev,
                         [order.id]: e.target.value
                       }))}
                       className="mt-1"
+                      rows={3}
                     />
                   </div>
                   
                   <div className="flex gap-2 flex-wrap">
-                    {getAvailableActions(order.status).map((action) => (
+                    {/* Pending Orders - Show Confirm/Cancel */}
+                    {order.status === "pending" && (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => handleStatusUpdate(order.id, "confirmed")}
+                          disabled={isUpdatingOrder}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          {isUpdatingOrder ? "Confirming..." : "✓ Confirm Order"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleStatusUpdate(order.id, "cancelled")}
+                          disabled={isUpdatingOrder}
+                        >
+                          {isUpdatingOrder ? "Cancelling..." : "✗ Cancel Order"}
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Confirmed Orders - Show Preparing */}
+                    {order.status === "confirmed" && (
                       <Button
-                        key={action}
                         size="sm"
-                        variant={action === "cancelled" ? "destructive" : "default"}
-                        onClick={() => handleStatusUpdate(order.id, action)}
+                        onClick={() => handleStatusUpdate(order.id, "preparing")}
                         disabled={isUpdatingOrder}
-                        className={action === "cancelled" ? "" : "bg-orange-600 hover:bg-orange-700"}
+                        className="bg-purple-600 hover:bg-purple-700 text-white"
                       >
-                        {isUpdatingOrder ? "Updating..." : 
-                          action === "confirmed" ? "Confirm Order" :
-                          action === "preparing" ? "Mark as Preparing" :
-                          action === "shipped" ? "Mark as Shipped" :
-                          action === "delivered" ? "Mark as Delivered" :
-                          action === "cancelled" ? "Cancel Order" :
-                          action.charAt(0).toUpperCase() + action.slice(1)
-                        }
+                        {isUpdatingOrder ? "Updating..." : "🔄 Start Preparing"}
                       </Button>
-                    ))}
+                    )}
+
+                    {/* Preparing Orders - Show Shipped */}
+                    {order.status === "preparing" && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleStatusUpdate(order.id, "shipped")}
+                        disabled={isUpdatingOrder}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {isUpdatingOrder ? "Updating..." : "🚚 Mark as Shipped"}
+                      </Button>
+                    )}
+
+                    {/* Shipped Orders - Show Delivered */}
+                    {order.status === "shipped" && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleStatusUpdate(order.id, "delivered")}
+                        disabled={isUpdatingOrder}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        {isUpdatingOrder ? "Updating..." : "✅ Mark as Delivered"}
+                      </Button>
+                    )}
+
+                    {/* No actions for cancelled or delivered orders */}
+                    {(order.status === "cancelled" || order.status === "delivered") && (
+                      <div className="text-sm text-muted-foreground py-2">
+                        {order.status === "cancelled" ? "Order was cancelled" : "Order completed successfully"}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
