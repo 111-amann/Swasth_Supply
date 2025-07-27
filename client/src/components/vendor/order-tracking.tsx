@@ -1,10 +1,16 @@
-import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useFirestore } from "@/hooks/use-firestore";
 import { where, orderBy } from "firebase/firestore";
-import { Clock, Package, CheckCircle, XCircle, MessageCircle, Truck } from "lucide-react";
+import {
+  Clock,
+  Package,
+  CheckCircle,
+  XCircle,
+  MessageCircle,
+  Truck,
+} from "lucide-react";
 
 interface OrderTrackingProps {
   vendorId: string;
@@ -13,7 +19,6 @@ interface OrderTrackingProps {
 export function OrderTracking({ vendorId }: OrderTrackingProps) {
   const { useCollection } = useFirestore();
 
-  // Get orders for this vendor
   const { documents: orders, loading } = useCollection("orders", [
     where("vendorId", "==", vendorId),
     orderBy("orderDate", "desc"),
@@ -21,17 +26,17 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'confirmed':
+      case "confirmed":
         return <CheckCircle className="h-4 w-4 text-blue-500" />;
-      case 'preparing':
+      case "preparing":
         return <Package className="h-4 w-4 text-orange-500" />;
-      case 'ready':
-        return <Truck className="h-4 w-4 text-purple-500" />; 
-      case 'delivered':
+      case "ready":
+        return <Truck className="h-4 w-4 text-purple-500" />;
+      case "delivered":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'cancelled':
+      case "cancelled":
         return <XCircle className="h-4 w-4 text-red-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
@@ -40,32 +45,32 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'confirmed':
-        return 'bg-blue-100 text-blue-800';
-      case 'preparing':
-        return 'bg-orange-100 text-orange-800';
-      case 'ready':
-        return 'bg-purple-100 text-purple-800';
-      case 'delivered':
-        return 'bg-green-100 text-green-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "confirmed":
+        return "bg-blue-100 text-blue-800";
+      case "preparing":
+        return "bg-orange-100 text-orange-800";
+      case "ready":
+        return "bg-purple-100 text-purple-800";
+      case "delivered":
+        return "bg-green-100 text-green-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatDate = (date: any) => {
-    if (!date) return 'N/A';
+    if (!date) return "N/A";
     const d = new Date(date.seconds ? date.seconds * 1000 : date);
-    return d.toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return d.toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -80,7 +85,9 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Order Tracking</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Order Tracking
+        </h2>
         <p className="text-muted-foreground">
           Track your orders and communicate with suppliers
         </p>
@@ -99,7 +106,7 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
@@ -107,13 +114,13 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
               <div className="ml-4">
                 <p className="text-sm text-muted-foreground">Pending</p>
                 <p className="text-2xl font-bold">
-                  {orders?.filter(o => o.status === 'pending').length || 0}
+                  {orders?.filter((o) => o.status === "pending").length || 0}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
@@ -121,13 +128,17 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
               <div className="ml-4">
                 <p className="text-sm text-muted-foreground">In Progress</p>
                 <p className="text-2xl font-bold">
-                  {orders?.filter(o => ['confirmed', 'preparing', 'ready'].includes(o.status)).length || 0}
+                  {
+                    orders?.filter((o) =>
+                      ["confirmed", "preparing", "ready"].includes(o.status)
+                    ).length || 0
+                  }
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
@@ -135,7 +146,7 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
               <div className="ml-4">
                 <p className="text-sm text-muted-foreground">Delivered</p>
                 <p className="text-2xl font-bold">
-                  {orders?.filter(o => o.status === 'delivered').length || 0}
+                  {orders?.filter((o) => o.status === "delivered").length || 0}
                 </p>
               </div>
             </div>
@@ -170,7 +181,7 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
                       Placed on {formatDate(order.orderDate)}
                     </p>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3">
                     <Badge className={getStatusColor(order.status)}>
                       <div className="flex items-center">
@@ -178,7 +189,7 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
                         <span className="ml-1 capitalize">{order.status}</span>
                       </div>
                     </Badge>
-                    
+
                     <div className="text-right">
                       <p className="text-lg font-bold text-green-600">
                         ₹{order.totalAmount}
@@ -189,12 +200,14 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
 
                 <div className="grid md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Delivery Address</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Delivery Address
+                    </h4>
                     <p className="text-sm text-muted-foreground">
                       {order.deliveryAddress}
                     </p>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Timeline</h4>
                     <div className="space-y-1 text-sm">
@@ -218,16 +231,20 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
                 <div className="mb-4">
                   <h4 className="font-medium text-gray-900 mb-2">Order Items</h4>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    {Array.isArray(order.items) && order.items.map((item: any, index: number) => (
-                      <div key={index} className="flex justify-between py-1">
-                        <span className="text-sm">
-                          {item.productName || 'Product'} (x{item.quantity})
-                        </span>
-                        <span className="text-sm font-medium">
-                          ₹{item.price}
-                        </span>
-                      </div>
-                    ))}
+                    {Array.isArray(order.items) &&
+                      order.items.map((item: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex justify-between py-1"
+                        >
+                          <span className="text-sm">
+                            {item.productName || "Product"} (x{item.quantity})
+                          </span>
+                          <span className="text-sm font-medium">
+                            ₹{item.price}
+                          </span>
+                        </div>
+                      ))}
                   </div>
                 </div>
 
@@ -245,9 +262,12 @@ export function OrderTracking({ vendorId }: OrderTrackingProps) {
                     <MessageCircle className="mr-1" size={14} />
                     Contact Supplier
                   </Button>
-                  
-                  {order.status === 'delivered' && (
-                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+
+                  {order.status === "delivered" && (
+                    <Button
+                      size="sm"
+                      className="bg-orange-600 hover:bg-orange-700"
+                    >
                       Leave Review
                     </Button>
                   )}

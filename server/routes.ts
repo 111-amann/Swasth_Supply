@@ -8,70 +8,58 @@ import express from "express";
 import fs from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // API routes for Swasth Supply
+  // Create uploads directory if not exists
+  if (!fs.existsSync("uploads")) {
+    fs.mkdirSync("uploads", { recursive: true });
+  }
 
   // Serve uploaded files statically
   app.use("/uploads", express.static("uploads"));
 
-  // Create uploads directory if it doesn't exist
-  if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads', { recursive: true });
-  }
-
-  // Configure multer for image uploads
+  // Multer config
   const uploadStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
+    destination: (_req, _file, cb) => cb(null, "uploads/"),
+    filename: (_req, file, cb) => {
       const uniqueSuffix = randomUUID() + path.extname(file.originalname);
       cb(null, uniqueSuffix);
-    }
+    },
   });
 
   const upload = multer({
     storage: uploadStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
       const allowedTypes = /jpeg|jpg|png|gif|webp/;
-      const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-      const mimetype = allowedTypes.test(file.mimetype);
-
-      if (mimetype && extname) {
-        return cb(null, true);
-      } else {
-        cb(new Error('Only PNG, JPG, JPEG, GIF and WebP files are allowed'));
-      }
-    }
+      const isValid =
+        allowedTypes.test(file.mimetype) &&
+        allowedTypes.test(path.extname(file.originalname).toLowerCase());
+      isValid
+        ? cb(null, true)
+        : cb(new Error("Only PNG, JPG, JPEG, GIF and WebP files are allowed"));
+    },
   });
 
-  // Health check
-  app.get("/api/health", (req, res) => {
+  // Health Check
+  app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Image upload endpoint
-  app.post("/api/upload", upload.single('image'), (req, res) => {
+  // Upload route
+  app.post("/api/upload", upload.single("image"), (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    
-    const imageUrl = `/uploads/${req.file.filename}`;
-    res.json({ imageUrl });
+    res.json({ imageUrl: `/uploads/${req.file.filename}` });
   });
 
-  // Serve uploaded images
-  app.use('/uploads', express.static('uploads'));
-
-  // User routes
+  // ==================== USER ROUTES ====================
   app.get("/api/users/:id", async (req, res) => {
     try {
       const user = await storage.getUser(req.params.id);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json(user);
-    } catch (error) {
+      user
+        ? res.json(user)
+        : res.status(404).json({ message: "User not found" });
+    } catch {
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -79,11 +67,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/firebase/:firebaseUid", async (req, res) => {
     try {
       const user = await storage.getUserByFirebaseUid(req.params.firebaseUid);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json(user);
-    } catch (error) {
+      user
+        ? res.json(user)
+        : res.status(404).json({ message: "User not found" });
+    } catch {
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -93,11 +80,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.createUser(req.body);
       res.status(201).json(user);
     } catch (error) {
-      res.status(500).json({ message: "Failed to create user" });
+      res.status(500).json({
+        message: "Failed to create user",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 
-  // Product routes
+  // ==================== PRODUCT ROUTES ====================
   app.get("/api/products", async (req, res) => {
     try {
       const { category, location, supplierId } = req.query;
@@ -107,29 +97,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         supplierId: supplierId as string,
       });
       res.json(products);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to fetch products" });
     }
   });
 
   app.post("/api/products", async (req, res) => {
-    try {
-      // Validate required fields
-      const { supplierId, name, category, price, unit, stockQuantity, deliveryTime } = req.body;
-      if (!supplierId || !name || !category || !price || !unit || !stockQuantity || !deliveryTime) {
-        return res.status(400).json({ 
-          message: "Missing required fields",
-          required: ["supplierId", "name", "category", "price", "unit", "stockQuantity", "deliveryTime"]
-        });
-      }
+    const { supplierId, name, category, price, unit, stockQuantity, deliveryTime } = req.body;
+    if (!supplierId || !name || !category || !price || !unit || !stockQuantity || !deliveryTime) {
+      return res.status(400).json({
+        message: "Missing required fields",
+        required: ["supplierId", "name", "category", "price", "unit", "stockQuantity", "deliveryTime"],
+      });
+    }
 
+    try {
       const product = await storage.createProduct(req.body);
       res.status(201).json(product);
     } catch (error) {
-      console.error("Error creating product:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: "Failed to create product",
-        error: error instanceof Error ? error.message : "Unknown error"
+        error: error instanceof Error ? error.message : "Unknown error",
       });
     }
   });
@@ -137,11 +125,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/products/:id", async (req, res) => {
     try {
       const product = await storage.updateProduct(req.params.id, req.body);
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-      res.json(product);
-    } catch (error) {
+      product
+        ? res.json(product)
+        : res.status(404).json({ message: "Product not found" });
+    } catch {
       res.status(500).json({ message: "Failed to update product" });
     }
   });
@@ -149,11 +136,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/products/:id", async (req, res) => {
     try {
       const product = await storage.updateProduct(req.params.id, req.body);
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-      res.json(product);
-    } catch (error) {
+      product
+        ? res.json(product)
+        : res.status(404).json({ message: "Product not found" });
+    } catch {
       res.status(500).json({ message: "Failed to update product" });
     }
   });
@@ -162,12 +148,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await storage.deleteProduct(req.params.id);
       res.status(204).send();
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to delete product" });
     }
   });
 
-  // Order routes
+  // ==================== ORDER ROUTES ====================
   app.get("/api/orders", async (req, res) => {
     try {
       const { vendorId, supplierId, status } = req.query;
@@ -177,7 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: status as string,
       });
       res.json(orders);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to fetch orders" });
     }
   });
@@ -186,7 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const order = await storage.createOrder(req.body);
       res.status(201).json(order);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to create order" });
     }
   });
@@ -194,16 +180,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/orders/:id", async (req, res) => {
     try {
       const order = await storage.updateOrder(req.params.id, req.body);
-      if (!order) {
-        return res.status(404).json({ message: "Order not found" });
-      }
-      res.json(order);
-    } catch (error) {
+      order
+        ? res.json(order)
+        : res.status(404).json({ message: "Order not found" });
+    } catch {
       res.status(500).json({ message: "Failed to update order" });
     }
   });
 
-  // Review routes
+  // ==================== REVIEW ROUTES ====================
   app.get("/api/reviews", async (req, res) => {
     try {
       const { supplierId, vendorId } = req.query;
@@ -212,7 +197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         vendorId: vendorId as string,
       });
       res.json(reviews);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to fetch reviews" });
     }
   });
@@ -221,8 +206,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const review = await storage.createReview(req.body);
       res.status(201).json(review);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to create review" });
+    }
+  });
+
+  // ================= SUPPORT MESSAGES =================
+  app.get("/api/support-messages", async (req, res) => {
+    try {
+      const { status } = req.query;
+      const messages = await storage.getSupportMessages({
+        status: status as string,
+      });
+      res.json(messages);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch support messages" });
+    }
+  });
+
+  app.post("/api/support-messages", async (req, res) => {
+    const { name, phone, message, source, status } = req.body;
+
+    if (!name || !phone || !message || !source) {
+      return res.status(400).json({
+        message: "Missing required fields",
+        required: ["name", "phone", "message", "source"],
+      });
+    }
+
+    try {
+      const supportMessage = await storage.createSupportMessage({
+        name,
+        phone,
+        message,
+        source,
+        status: status || "open",
+      });
+      res.status(201).json(supportMessage);
+    } catch (error) {
+      res.status(500).json({
+        message: "Failed to create support message",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
+  app.put("/api/support-messages/:id", async (req, res) => {
+    try {
+      const message = await storage.updateSupportMessage(req.params.id, req.body);
+      message
+        ? res.json(message)
+        : res.status(404).json({ message: "Support message not found" });
+    } catch {
+      res.status(500).json({ message: "Failed to update support message" });
     }
   });
 

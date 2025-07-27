@@ -2,10 +2,23 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useFirestore } from "@/hooks/use-firestore";
 import { where, orderBy } from "firebase/firestore";
-import { Clock, CheckCircle, Package, Truck, Phone, MapPin } from "lucide-react";
+import {
+  Clock,
+  CheckCircle,
+  Package,
+  Truck,
+  Phone,
+  MapPin,
+} from "lucide-react";
 
 interface OrderManagementProps {
   supplierId: string;
@@ -14,63 +27,22 @@ interface OrderManagementProps {
 export function OrderManagement({ supplierId }: OrderManagementProps) {
   const { updateDocument, useCollection } = useFirestore();
 
-  // Get supplier's orders
-  const { documents: orders, loading } = useFirestore().useCollection("orders", [
+  const {
+    documents: fetchedOrders,
+    loading,
+    error,
+  } = useCollection("orders", [
     where("supplierId", "==", supplierId),
     orderBy("orderDate", "desc"),
   ]);
 
-  // Mock orders for demonstration
-  const mockOrders = [
-    {
-      id: "order1",
-      orderNumber: "#12345",
-      vendorName: "Raj's Puchka Corner",
-      orderDate: "2 hours ago",
-      items: [
-        { name: "Basmati Rice", quantity: 1, unit: "25kg" },
-        { name: "Cooking Oil", quantity: 1, unit: "15L" },
-      ],
-      totalAmount: 3050,
-      status: "pending",
-      deliveryAddress: "Connaught Place, Delhi",
-      vendorPhone: "+91 9876543210",
-    },
-    {
-      id: "order2",
-      orderNumber: "#12344",
-      vendorName: "Mumbai Chaat Wala",
-      orderDate: "1 day ago",
-      items: [
-        { name: "Garam Masala", quantity: 5, unit: "kg" },
-        { name: "Red Chili Powder", quantity: 2, unit: "kg" },
-      ],
-      totalAmount: 2650,
-      status: "delivered",
-      deliveryAddress: "Churchgate, Mumbai",
-      vendorPhone: "+91 9123456789",
-    },
-    {
-      id: "order3",
-      orderNumber: "#12343",
-      vendorName: "Delhi Street Food Co.",
-      orderDate: "3 days ago",
-      items: [
-        { name: "Onions", quantity: 2, unit: "50kg" },
-        { name: "Potatoes", quantity: 1, unit: "50kg" },
-      ],
-      totalAmount: 2100,
-      status: "confirmed",
-      deliveryAddress: "Karol Bagh, Delhi",
-      vendorPhone: "+91 9234567890",
-    },
-  ];
+  const orders = fetchedOrders?.length ? fetchedOrders : [];
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
-      await updateDocument("orders", orderId, { 
+      await updateDocument("orders", orderId, {
         status: newStatus,
-        ...(newStatus === "delivered" && { actualDelivery: new Date() })
+        ...(newStatus === "delivered" && { actualDelivery: new Date() }),
       });
     } catch (error) {
       console.error("Error updating order status:", error);
@@ -78,20 +50,14 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Clock className="w-4 h-4" />;
-      case "confirmed":
-        return <CheckCircle className="w-4 h-4" />;
-      case "preparing":
-        return <Package className="w-4 h-4" />;
-      case "ready":
-        return <Truck className="w-4 h-4" />;
-      case "delivered":
-        return <CheckCircle className="w-4 h-4" />;
-      default:
-        return <Package className="w-4 h-4" />;
-    }
+    const icons: Record<string, JSX.Element> = {
+      pending: <Clock className="w-4 h-4" />,
+      confirmed: <CheckCircle className="w-4 h-4" />,
+      preparing: <Package className="w-4 h-4" />,
+      ready: <Truck className="w-4 h-4" />,
+      delivered: <CheckCircle className="w-4 h-4" />,
+    };
+    return icons[status] ?? <Package className="w-4 h-4" />;
   };
 
   const getStatusBadge = (status: string) => {
@@ -125,9 +91,11 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Incoming Orders</h2>
 
-      {/* Order Cards */}
+      {loading && <p className="text-muted-foreground">Loading orders...</p>}
+      {error && <p className="text-red-500">Failed to load orders.</p>}
+
       <div className="space-y-4">
-        {mockOrders.map((order) => (
+        {orders.map((order: any) => (
           <Card key={order.id} className="supplier-card">
             <CardContent className="p-6">
               <div className="flex justify-between items-start mb-4">
@@ -142,9 +110,7 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
                   onValueChange={(value) => handleStatusUpdate(order.id, value)}
                 >
                   <SelectTrigger className="w-48">
-                    <SelectValue>
-                      {getStatusBadge(order.status)}
-                    </SelectValue>
+                    <SelectValue>{getStatusBadge(order.status)}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {statusOptions.map((option) => (
@@ -158,13 +124,13 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="border-t pt-4">
                 <div className="grid md:grid-cols-4 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Items</p>
                     <div className="font-medium">
-                      {order.items.map((item, index) => (
+                      {order.items.map((item: any, index: number) => (
                         <div key={index}>
                           {item.name} ({item.quantity} {item.unit})
                         </div>
@@ -180,7 +146,9 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Amount</p>
-                    <p className="font-semibold text-secondary text-lg">₹{order.totalAmount}</p>
+                    <p className="font-semibold text-secondary text-lg">
+                      ₹{order.totalAmount}
+                    </p>
                   </div>
                   <div className="flex space-x-2">
                     {order.status === "delivered" ? (
@@ -188,7 +156,7 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
                         Completed
                       </Button>
                     ) : (
-                      <Button 
+                      <Button
                         className="flex-1 bg-secondary hover:bg-secondary/90"
                         onClick={() => handleStatusUpdate(order.id, "confirmed")}
                         disabled={order.status !== "pending"}
@@ -203,29 +171,31 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
                 </div>
               </div>
 
-              {/* Order Progress */}
               {order.status !== "delivered" && order.status !== "cancelled" && (
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-blue-800">Order Progress:</span>
                     <div className="flex items-center space-x-2">
-                      {["pending", "confirmed", "preparing", "ready", "delivered"].map((step, index) => {
-                        const isCompleted = statusOptions.findIndex(s => s.value === order.status) >= index;
-                        const isCurrent = step === order.status;
-                        
-                        return (
-                          <div
-                            key={step}
-                            className={`w-3 h-3 rounded-full ${
-                              isCompleted 
-                                ? "bg-blue-500" 
-                                : isCurrent 
-                                ? "bg-blue-300 animate-pulse" 
-                                : "bg-gray-300"
-                            }`}
-                          />
-                        );
-                      })}
+                      {["pending", "confirmed", "preparing", "ready", "delivered"].map(
+                        (step, index) => {
+                          const isCompleted =
+                            statusOptions.findIndex((s) => s.value === order.status) >= index;
+                          const isCurrent = step === order.status;
+
+                          return (
+                            <div
+                              key={step}
+                              className={`w-3 h-3 rounded-full ${
+                                isCompleted
+                                  ? "bg-blue-500"
+                                  : isCurrent
+                                  ? "bg-blue-300 animate-pulse"
+                                  : "bg-gray-300"
+                              }`}
+                            />
+                          );
+                        }
+                      )}
                     </div>
                   </div>
                 </div>
@@ -235,7 +205,7 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
         ))}
       </div>
 
-      {mockOrders.length === 0 && (
+      {orders.length === 0 && !loading && (
         <Card>
           <CardContent className="p-8 text-center">
             <Package className="mx-auto mb-4 text-muted-foreground" size={48} />

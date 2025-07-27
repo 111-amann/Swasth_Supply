@@ -12,6 +12,9 @@ import Home from "@/pages/home";
 import ProductsPage from "@/pages/products";
 import VendorDashboard from "@/pages/vendor-dashboard";
 import SupplierDashboard from "@/pages/supplier-dashboard";
+import About from "@/pages/about";
+import HowItWorks from "@/pages/how-it-works";
+import Support from "@/pages/support";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,18 +29,19 @@ function Router() {
         setProfileLoading(true);
         try {
           const profiles = await getDocuments("users", [
-            where("firebaseUid", "==", user.uid)
+            where("firebaseUid", "==", user.uid),
           ]);
           if (profiles.length > 0) {
             setUserProfile(profiles[0]);
           } else {
-            // If no profile found, don't set a profile - let user create one
             setUserProfile(null);
           }
         } catch (error: any) {
           console.error("Error fetching user profile:", error);
-          // If Firestore is not accessible, don't create a profile
-          if (error.code === "permission-denied" || error.code === "unavailable") {
+          if (
+            error.code === "permission-denied" ||
+            error.code === "unavailable"
+          ) {
             setUserProfile(null);
           }
         } finally {
@@ -60,7 +64,6 @@ function Router() {
     );
   }
 
-  // If user is authenticated and has a profile, show appropriate dashboard
   if (user && userProfile) {
     if (userProfile.userType === "vendor") {
       return <VendorDashboard userProfile={userProfile} />;
@@ -69,11 +72,13 @@ function Router() {
     }
   }
 
-  // Show home page for unauthenticated users or users without profiles
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/products" component={ProductsPage} />
+      <Route path="/about" component={About} />
+      <Route path="/how-it-works" component={HowItWorks} />
+      <Route path="/support" component={Support} />
       <Route component={NotFound} />
     </Switch>
   );
