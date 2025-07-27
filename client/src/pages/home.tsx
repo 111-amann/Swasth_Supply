@@ -4,9 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { AuthModal } from "@/components/auth-modal";
+import { ProfileCreator } from "@/components/profile-creator";
 import { ChatSupport } from "@/components/chat-support";
 import { Header } from "@/components/header";
 import { useLanguage } from "@/hooks/use-language";
+import { useAuth } from "@/hooks/use-auth";
 import { 
   Store, MapPin, IndianRupee, Shield, Utensils, Truck, Search, 
   CheckCircle, DollarSign, Clock, Star, Quote, ChevronRight,
@@ -24,6 +26,7 @@ export default function Home() {
     isOpen: false,
   });
   const { t } = useLanguage();
+  const { user } = useAuth();
 
   const openAuthModal = (userType?: "vendor" | "supplier", mode: "login" | "signup" = "login") => {
     setAuthModal({ isOpen: true, userType, mode });
@@ -84,23 +87,45 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button
-                onClick={() => openAuthModal("vendor", "signup")}
-                size="lg"
-                className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
-              >
-                <Users className="mr-2" size={20} />
-                {t('home.hero.vendorButton')}
-              </Button>
-              <Button
-                onClick={() => openAuthModal("supplier", "signup")}
-                size="lg"
-                variant="outline"
-                className="border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white px-8 py-3"
-              >
-                <Truck className="mr-2" size={20} />
-                {t('home.hero.supplierButton')}
-              </Button>
+              {user ? (
+                <div className="space-y-4">
+                  <p className="text-green-700 font-medium text-center">
+                    Welcome back {user.email}! Choose your account type:
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <ProfileCreator
+                      userType="vendor"
+                      buttonText="Continue as Vendor"
+                      buttonClassName="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors"
+                    />
+                    <ProfileCreator
+                      userType="supplier"
+                      buttonText="Continue as Supplier"
+                      buttonClassName="border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <Button
+                    onClick={() => openAuthModal("vendor", "signup")}
+                    size="lg"
+                    className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
+                  >
+                    <Users className="mr-2" size={20} />
+                    {t('home.hero.vendorButton')}
+                  </Button>
+                  <Button
+                    onClick={() => openAuthModal("supplier", "signup")}
+                    size="lg"
+                    variant="outline"
+                    className="border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white px-8 py-3"
+                  >
+                    <Truck className="mr-2" size={20} />
+                    {t('home.hero.supplierButton')}
+                  </Button>
+                </>
+              )}
             </div>
             
             {/* Stats */}

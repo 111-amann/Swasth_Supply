@@ -37,40 +37,16 @@ function Router() {
           console.log("Found profiles:", profiles);
           
           if (profiles.length > 0) {
+            console.log("Profile found:", profiles[0]);
             setUserProfile(profiles[0]);
           } else {
-            console.log("No profile found, creating default vendor profile");
-            // Create a default profile if none exists
-            setUserProfile({
-              id: user.uid,
-              firebaseUid: user.uid,
-              email: user.email || "",
-              fullName: user.displayName || user.email || "User",
-              phone: "",
-              userType: "vendor", // Default to vendor
-              location: "",
-              businessName: "",
-              businessAddress: "",
-              isVerified: false,
-              createdAt: new Date(),
-            });
+            console.log("No profile found - user needs to register first");
+            setUserProfile(null);
           }
         } catch (error: any) {
           console.error("Error fetching user profile:", error);
-          // If there's an error, create a default profile
-          setUserProfile({
-            id: user.uid,
-            firebaseUid: user.uid,
-            email: user.email || "",
-            fullName: user.displayName || user.email || "User",
-            phone: "",
-            userType: "vendor", // Default to vendor
-            location: "",
-            businessName: "",
-            businessAddress: "",
-            isVerified: false,
-            createdAt: new Date(),
-          });
+          console.log("Profile fetch failed - user needs to register");
+          setUserProfile(null);
         } finally {
           setProfileLoading(false);
         }
@@ -121,23 +97,11 @@ function Router() {
     }
   }
 
-  // If user is logged in but no profile or profile creation failed, show vendor dashboard as default
-  if (user && !profileLoading) {
-    console.log("No profile found, defaulting to Vendor Dashboard");
-    const defaultProfile = {
-      id: user.uid,
-      firebaseUid: user.uid,
-      email: user.email || "",
-      fullName: user.displayName || user.email || "User",
-      phone: "",
-      userType: "vendor" as const,
-      location: "",
-      businessName: "",
-      businessAddress: "",
-      isVerified: false,
-      createdAt: new Date(),
-    };
-    return <VendorDashboard userProfile={defaultProfile} />;
+  // If user is logged in but no profile exists, they need to complete registration
+  if (user && !profileLoading && userProfile === null) {
+    console.log("User logged in but no profile - redirecting to home for registration");
+    // User is authenticated but hasn't completed registration
+    // Let them access the home page to register as vendor or supplier
   }
 
   return (
