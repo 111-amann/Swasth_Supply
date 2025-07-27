@@ -41,6 +41,11 @@ export default function Home() {
             </div>
             
             <div className="hidden md:flex items-center space-x-6">
+              <a href="/products">
+                <Button variant="ghost" className="text-muted-foreground hover:text-primary">
+                  View Products
+                </Button>
+              </a>
               <Button variant="ghost" className="text-muted-foreground hover:text-primary">
                 About
               </Button>
