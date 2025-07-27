@@ -71,7 +71,11 @@ const productFormSchema = z.object({
 });
 type ProductFormData = z.infer<typeof productFormSchema>;
 
-export function ProductManagement() {
+interface ProductManagementProps {
+  supplierId?: string;
+}
+
+export function ProductManagement({ supplierId }: ProductManagementProps = {}) {
   const [isAdding, setIsAdding] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
 
@@ -87,8 +91,21 @@ export function ProductManagement() {
   } = useProducts();
 
   const allProducts = products || [];
+  const currentSupplierId = supplierId || user?.uid;
   const supplierProducts =
-    products?.filter((p) => p.supplierId === user?.uid) || [];
+    products?.filter((p) => p.supplierId === currentSupplierId) || [];
+
+  // Debug logging
+  console.log("ProductManagement Debug:", {
+    user: user?.uid,
+    supplierId,
+    currentSupplierId,
+    totalProducts: products?.length || 0,
+    supplierProducts: supplierProducts.length,
+    products: products?.slice(0, 2) || [], // First 2 products for debugging
+    loading,
+    error
+  });
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
