@@ -18,6 +18,23 @@ import { useAuth } from "@/hooks/use-auth";
 import { Plus, Edit, TrendingUp, Package, Trash2 } from "lucide-react";
 import { z } from "zod";
 
+// Product type definition matching Firebase data structure
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string;
+  price: number | string;
+  unit: string;
+  stockQuantity: number;
+  minimumOrder: number | null;
+  deliveryTime: string;
+  imageUrl: string | null;
+  supplierId: string;
+  isActive: boolean | null;
+  createdAt?: any;
+}
+
 const productFormSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().optional(),
@@ -54,7 +71,11 @@ export function ProductManagement() {
     },
   });
 
-  // Filter products for current supplier using Firebase UID
+  // Show ALL products from Firebase database instead of filtering by supplier
+  // This displays all 18 products from the Firebase database
+  const allProducts = products || [];
+  
+  // Also keep the filtered version for supplier-specific operations
   const supplierProducts = products.filter((product: Product) => 
     product.supplierId === user?.uid
   );
@@ -75,7 +96,7 @@ export function ProductManagement() {
         ...data,
         price: parseFloat(data.price),
         stockQuantity: parseInt(data.stockQuantity),
-        minimumOrder: parseInt(data.minimumOrder),
+        minimumOrder: parseInt(data.minimumOrder) || 1,
         supplierId: user.uid, // Use Firebase UID directly
         isActive: true,
       };
@@ -191,13 +212,13 @@ export function ProductManagement() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+            <CardTitle className="text-sm font-medium">All Products in Database</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{supplierProducts.length}</div>
+            <div className="text-2xl font-bold">{allProducts.length}</div>
             <p className="text-xs text-muted-foreground">
-              Active listings
+              From Firebase database
             </p>
           </CardContent>
         </Card>
@@ -209,7 +230,7 @@ export function ProductManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {supplierProducts.filter((p: Product) => p.stockQuantity < 10).length}
+              {allProducts.filter((p: Product) => p.stockQuantity < 10).length}
             </div>
             <p className="text-xs text-muted-foreground">
               Need restocking
@@ -224,7 +245,7 @@ export function ProductManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Set(supplierProducts.map((p: Product) => p.category)).size}
+              {new Set(allProducts.map((p: Product) => p.category)).size}
             </div>
             <p className="text-xs text-muted-foreground">
               Unique categories
@@ -233,10 +254,10 @@ export function ProductManagement() {
         </Card>
       </div>
 
-      {/* Product List */}
+      {/* All Products from Firebase */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Your Products</h3>
-        {supplierProducts.length === 0 ? (
+        <h3 className="text-lg font-semibold">All Products from Firebase Database ({allProducts.length})</h3>
+        {allProducts.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
               <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
@@ -252,7 +273,7 @@ export function ProductManagement() {
           </Card>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {supplierProducts.map((product: Product) => (
+            {allProducts.map((product: Product) => (
               <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-200">
                 <CardContent className="p-0">
                   {/* Square image container */}
@@ -301,7 +322,7 @@ export function ProductManagement() {
                     </h4>
                     
                     <p className="text-xs text-gray-600 line-clamp-2 min-h-[2rem]">
-                      {product.description}
+                      {product.description || "No description available"}
                     </p>
                     
                     <div className="flex items-center justify-between">
