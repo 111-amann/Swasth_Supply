@@ -30,22 +30,47 @@ function Router() {
       if (user && !userProfile && !profileLoading) {
         setProfileLoading(true);
         try {
+          console.log("Fetching user profile for:", user.uid);
           const profiles = await getDocuments("users", [
             where("firebaseUid", "==", user.uid),
           ]);
+          console.log("Found profiles:", profiles);
+          
           if (profiles.length > 0) {
             setUserProfile(profiles[0]);
           } else {
-            setUserProfile(null);
+            console.log("No profile found, creating default vendor profile");
+            // Create a default profile if none exists
+            setUserProfile({
+              id: user.uid,
+              firebaseUid: user.uid,
+              email: user.email || "",
+              fullName: user.displayName || user.email || "User",
+              phone: "",
+              userType: "vendor", // Default to vendor
+              location: "",
+              businessName: "",
+              businessAddress: "",
+              isVerified: false,
+              createdAt: new Date(),
+            });
           }
         } catch (error: any) {
           console.error("Error fetching user profile:", error);
-          if (
-            error.code === "permission-denied" ||
-            error.code === "unavailable"
-          ) {
-            setUserProfile(null);
-          }
+          // If there's an error, create a default profile
+          setUserProfile({
+            id: user.uid,
+            firebaseUid: user.uid,
+            email: user.email || "",
+            fullName: user.displayName || user.email || "User",
+            phone: "",
+            userType: "vendor", // Default to vendor
+            location: "",
+            businessName: "",
+            businessAddress: "",
+            isVerified: false,
+            createdAt: new Date(),
+          });
         } finally {
           setProfileLoading(false);
         }
@@ -55,12 +80,23 @@ function Router() {
     fetchUserProfile();
   }, [user, userProfile, profileLoading, getDocuments]);
 
-  if (loading || profileLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-warm-gray">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Loading authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-warm-gray">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading profile...</p>
         </div>
       </div>
     );
@@ -83,6 +119,25 @@ function Router() {
       console.log("Routing to Supplier Dashboard");
       return <SupplierDashboard userProfile={userProfile} />;
     }
+  }
+
+  // If user is logged in but no profile or profile creation failed, show vendor dashboard as default
+  if (user && !profileLoading) {
+    console.log("No profile found, defaulting to Vendor Dashboard");
+    const defaultProfile = {
+      id: user.uid,
+      firebaseUid: user.uid,
+      email: user.email || "",
+      fullName: user.displayName || user.email || "User",
+      phone: "",
+      userType: "vendor" as const,
+      location: "",
+      businessName: "",
+      businessAddress: "",
+      isVerified: false,
+      createdAt: new Date(),
+    };
+    return <VendorDashboard userProfile={defaultProfile} />;
   }
 
   return (
