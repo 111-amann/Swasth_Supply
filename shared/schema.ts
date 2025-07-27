@@ -51,9 +51,12 @@ export interface Order {
   orderDate: Date;
   estimatedDelivery?: Date;
   actualDelivery?: Date;
-  notes?: string;
+  notes?: string; // Customer notes
+  supplierNotes?: string; // Supplier notes/updates
   vendorName?: string;
   supplierName?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // ORDER ITEM INTERFACE

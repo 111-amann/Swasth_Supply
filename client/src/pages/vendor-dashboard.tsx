@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useProducts } from "@/hooks/use-products";
 import { useOrders } from "@/hooks/use-orders";
+import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { ChatSupport } from "@/components/chat-support";
 import { Search, ShoppingCart, User, Store, Plus, Minus, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -31,7 +32,8 @@ export default function VendorDashboard({ userProfile }: VendorDashboardProps) {
   });
 
   const { products, loading: productsLoading } = useProducts();
-  const { createOrder, orders, loading: ordersLoading } = useOrders();
+  const { createOrder } = useOrders();
+  const { orders, loading: ordersLoading } = useRealtimeOrders(user?.uid, 'vendor');
   const [cart, setCart] = useState<{ [productId: string]: number }>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -106,15 +108,19 @@ export default function VendorDashboard({ userProfile }: VendorDashboardProps) {
       // Create separate orders for each supplier
       for (const [supplierId, items] of Object.entries(ordersBySupplier)) {
         const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const supplier = allProducts.find(p => p.supplierId === supplierId);
+        
+        console.log("Creating order for supplier:", supplierId, "Items:", items);
         
         await createOrder({
           vendorId: user?.uid!,
           supplierId,
           items,
           totalAmount,
-          deliveryAddress: profile.businessAddress || "Default Address",
-          vendorName: profile.fullName,
-          supplierName: allProducts.find(p => p.supplierId === supplierId)?.supplierName || "Supplier",
+          deliveryAddress: profile.businessAddress || profile.location || "Please update your address",
+          vendorName: profile.fullName || profile.businessName || "Vendor",
+          supplierName: supplier?.supplierName || "Supplier",
+          notes: `Order from ${profile.businessName || profile.fullName} - ${items.length} item(s)`,
         });
       }
 
@@ -386,9 +392,14 @@ export default function VendorDashboard({ userProfile }: VendorDashboardProps) {
                               ))}
                             </div>
                           </div>
-                          {order.notes && (
-                            <div className="pt-2 border-t">
-                              <p className="text-sm"><strong>Notes:</strong> {order.notes}</p>
+                          {(order.notes || (order as any).supplierNotes) && (
+                            <div className="pt-2 border-t space-y-1">
+                              {order.notes && (
+                                <p className="text-sm"><strong>Order Notes:</strong> {order.notes}</p>
+                              )}
+                              {(order as any).supplierNotes && (
+                                <p className="text-sm"><strong>Supplier Update:</strong> {(order as any).supplierNotes}</p>
+                              )}
                             </div>
                           )}
                         </div>

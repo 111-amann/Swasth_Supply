@@ -41,6 +41,8 @@ export function useOrders() {
             orderDate: data.orderDate?.toDate ? data.orderDate.toDate() : data.orderDate,
             estimatedDelivery: data.estimatedDelivery?.toDate ? data.estimatedDelivery.toDate() : data.estimatedDelivery,
             actualDelivery: data.actualDelivery?.toDate ? data.actualDelivery.toDate() : data.actualDelivery,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt,
+            updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : data.updatedAt,
           };
         }) as Order[];
 
@@ -69,20 +71,27 @@ export function useOrders() {
       vendorName?: string;
       supplierName?: string;
     }) => {
-      const docRef = await addDoc(collection(db, "orders"), {
+      console.log("Creating order in Firebase:", orderData);
+      
+      const orderToCreate = {
         ...orderData,
         status: "pending",
         orderDate: Timestamp.now(),
         estimatedDelivery: null,
         actualDelivery: null,
-      });
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      };
+
+      const docRef = await addDoc(collection(db, "orders"), orderToCreate);
+      console.log("Order created with ID:", docRef.id);
 
       toast({
         title: "Order Placed Successfully!",
-        description: "Your order has been sent to the supplier.",
+        description: `Your order has been sent to ${orderData.supplierName || 'the supplier'}.`,
       });
 
-      return { id: docRef.id, ...orderData };
+      return { id: docRef.id, ...orderToCreate };
     },
     onError: (error: any) => {
       console.error("Error creating order:", error);
@@ -94,33 +103,53 @@ export function useOrders() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
+      console.log("Order created successfully, cache invalidated");
     },
   });
 
   // Update order status mutation
   const updateOrderStatusMutation = useMutation({
-    mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
+    mutationFn: async ({ id, status, notes, estimatedDelivery }: { 
+      id: string; 
+      status: string; 
+      notes?: string;
+      estimatedDelivery?: Date;
+    }) => {
+      console.log("Updating order status:", { id, status, notes });
+      
       const updateData: any = {
         status,
         updatedAt: Timestamp.now(),
       };
 
       if (notes) {
-        updateData.notes = notes;
+        updateData.supplierNotes = notes;
+      }
+
+      if (estimatedDelivery) {
+        updateData.estimatedDelivery = Timestamp.fromDate(estimatedDelivery);
       }
 
       if (status === "delivered") {
         updateData.actualDelivery = Timestamp.now();
+      } else if (status === "confirmed") {
+        // Set estimated delivery to 3 days from now if not provided
+        if (!estimatedDelivery) {
+          const threeDaysFromNow = new Date();
+          threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+          updateData.estimatedDelivery = Timestamp.fromDate(threeDaysFromNow);
+        }
       }
 
       await updateDoc(doc(db, "orders", id), updateData);
+      console.log("Order updated successfully");
 
       toast({
         title: "Order Updated",
-        description: `Order status updated to ${status}.`,
+        description: `Order status updated to ${status.charAt(0).toUpperCase() + status.slice(1)}.`,
       });
 
-      return { id, status };
+      return { id, status, ...updateData };
     },
     onError: (error: any) => {
       console.error("Error updating order:", error);
@@ -132,6 +161,7 @@ export function useOrders() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
+      console.log("Order update successful, cache invalidated");
     },
   });
 

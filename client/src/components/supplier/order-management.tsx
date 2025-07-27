@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useOrders } from "@/hooks/use-orders";
+import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { useAuth } from "@/hooks/use-auth";
 import { ShoppingCart, Clock, CheckCircle, XCircle, Truck, Package } from "lucide-react";
 
@@ -14,18 +15,29 @@ interface OrderManagementProps {
 
 export function OrderManagement({ supplierId }: OrderManagementProps) {
   const { user } = useAuth();
-  const { orders, updateOrderStatus, isUpdatingOrder } = useOrders();
+  const { updateOrderStatus, isUpdatingOrder } = useOrders();
+  const { orders, loading: ordersLoading } = useRealtimeOrders(supplierId || user?.uid, 'supplier');
   const [updateNotes, setUpdateNotes] = useState<{ [orderId: string]: string }>({});
 
-  // Filter orders for this supplier
-  const supplierOrders = orders.filter(order => order.supplierId === (supplierId || user?.uid));
+  // All orders are already filtered by supplier ID in the realtime hook
+  const supplierOrders = orders;
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
+      console.log("Supplier updating order:", orderId, "to status:", newStatus);
+      
+      // Set estimated delivery date for confirmed orders
+      let estimatedDelivery: Date | undefined;
+      if (newStatus === "confirmed") {
+        estimatedDelivery = new Date();
+        estimatedDelivery.setDate(estimatedDelivery.getDate() + 3); // 3 days from now
+      }
+      
       await updateOrderStatus({
         id: orderId,
         status: newStatus,
         notes: updateNotes[orderId] || undefined,
+        estimatedDelivery,
       });
       
       // Clear the notes after update
@@ -184,9 +196,14 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
               </div>
 
               {/* Notes */}
-              {order.notes && (
-                <div className="pt-2 border-t">
-                  <p className="text-sm"><strong>Customer Notes:</strong> {order.notes}</p>
+              {(order.notes || (order as any).supplierNotes) && (
+                <div className="pt-2 border-t space-y-2">
+                  {order.notes && (
+                    <p className="text-sm"><strong>Customer Notes:</strong> {order.notes}</p>
+                  )}
+                  {(order as any).supplierNotes && (
+                    <p className="text-sm"><strong>Supplier Notes:</strong> {(order as any).supplierNotes}</p>
+                  )}
                 </div>
               )}
 
