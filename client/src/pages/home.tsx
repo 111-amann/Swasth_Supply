@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { AuthModal } from "@/components/auth-modal";
 import { ProfileCreator } from "@/components/profile-creator";
 import { ChatSupport } from "@/components/chat-support";
-import { AddSampleData } from "@/components/add-sample-data";
 import { Header } from "@/components/header";
 import { useLanguage } from "@/hooks/use-language";
 import { useAuth } from "@/hooks/use-auth";
@@ -145,14 +144,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Temporary Sample Data Section - for testing */}
-      <section className="py-8 bg-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-lg font-semibold mb-4">For Testing: Add Sample Products to Database</h3>
-          <AddSampleData />
         </div>
       </section>
 

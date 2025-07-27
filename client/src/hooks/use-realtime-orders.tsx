@@ -29,8 +29,7 @@ export function useRealtimeOrders(userId?: string, userType?: 'vendor' | 'suppli
     
     const q = query(
       ordersRef, 
-      where(field, "==", userId),
-      orderBy("orderDate", "desc")
+      where(field, "==", userId)
     );
 
     const unsubscribe = onSnapshot(
