@@ -99,10 +99,19 @@ const translations = {
     
     // About Page
     'about.hero.title': 'About StreetSupply',
-    'about.hero.subtitle': 'Empowering street food vendors across India',
+    'about.hero.subtitle': 'Empowering local vendors to access raw materials easily and affordably',
     'about.mission.title': 'Our Mission',
-    'about.mission.text': 'To bridge the gap between street food vendors and quality suppliers, making fresh ingredients accessible and affordable for everyone.',
+    'about.mission.text': 'To bridge the gap between street food vendors and reliable suppliers, creating a digital marketplace that ensures fresh ingredients, fair pricing, and consistent supply for India\'s vibrant street food ecosystem.',
     'about.vision.title': 'Our Vision',
+    'about.challenge.title': 'The Challenge We\'re Solving',
+    
+    // How it works page
+    'howitworks.hero.title': 'How StreetSupply Works',
+    'howitworks.hero.subtitle': 'Simple steps to connect vendors with suppliers across India',
+    'howitworks.vendors.title': 'For Street Food Vendors',
+    'howitworks.vendors.subtitle': 'Get fresh ingredients delivered to your doorstep',
+    'howitworks.suppliers.title': 'For Suppliers',
+    'howitworks.suppliers.subtitle': 'Reach thousands of vendors in your area',
     'about.vision.text': 'To become India\'s largest B2B marketplace for street food vendors, supporting local businesses and promoting food safety.',
     'about.values.title': 'Our Values',
     'about.values.trust': 'Trust & Transparency',
@@ -212,7 +221,16 @@ const translations = {
     
     // About Page
     'about.hero.title': 'StreetSupply के बारे में',
-    'about.hero.subtitle': 'भारत भर के स्ट्रीट फूड विक्रेताओं को सशक्त बनाना',
+    'about.hero.subtitle': 'स्थानीय विक्रेताओं को कच्चे माल तक आसानी से और किफायती पहुंच प्रदान करना',
+    'about.challenge.title': 'हम जो चुनौती हल कर रहे हैं',
+    
+    // How it works page
+    'howitworks.hero.title': 'StreetSupply कैसे काम करता है',
+    'howitworks.hero.subtitle': 'भारत भर में विक्रेताओं को आपूर्तिकर्ताओं से जोड़ने के सरल कदम',
+    'howitworks.vendors.title': 'स्ट्रीट फूड विक्रेताओं के लिए',
+    'howitworks.vendors.subtitle': 'अपने दरवाजे पर ताज़ी सामग्री पहुंचाएं',
+    'howitworks.suppliers.title': 'आपूर्तिकर्ताओं के लिए',
+    'howitworks.suppliers.subtitle': 'अपने क्षेत्र में हजारों विक्रेताओं तक पहुंचें',
     'about.mission.title': 'हमारा मिशन',
     'about.mission.text': 'स्ट्रीट फूड विक्रेताओं और गुणवत्तापूर्ण आपूर्तिकर्ताओं के बीच की खाई को पाटना, सभी के लिए ताज़ी सामग्री को सुलभ और किफायती बनाना।',
     'about.vision.title': 'हमारी दृष्टि',

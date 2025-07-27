@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Phone, Mail, ChevronDown, ChevronUp } from "lucide-react";
 import { Header } from "@/components/header";
+import { useLanguage } from "@/hooks/use-language";
 
 const faqData = [
   {
@@ -29,6 +30,7 @@ const faqData = [
 
 export default function Support() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const { t } = useLanguage();
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -54,10 +56,10 @@ export default function Support() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            We're Here to <span className="text-blue-600">Help</span>
+            {t('support.hero.title')}
           </h1>
           <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-            Get support in Hindi or English from our friendly team
+            {t('support.hero.subtitle')}
           </p>
         </div>
 
@@ -68,8 +70,8 @@ export default function Support() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-full mb-6">
                 <MessageCircle className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">WhatsApp Chat</h3>
-              <p className="text-gray-700 mb-4">Get instant help on WhatsApp</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('support.whatsapp')}</h3>
+              <p className="text-gray-700 mb-4">{t('support.whatsappDesc')}</p>
               <Button className="bg-green-600 hover:bg-green-700 text-white">
                 Chat Now
               </Button>
@@ -81,8 +83,8 @@ export default function Support() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-6">
                 <Phone className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Call Us</h3>
-              <p className="text-gray-700 mb-4">Speak to our support team</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('support.phone')}</h3>
+              <p className="text-gray-700 mb-4">{t('support.phoneDesc')}</p>
               <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={(e) => { e.stopPropagation(); callSupport(); }}>
                 +91 78876 41151
               </Button>
@@ -94,8 +96,8 @@ export default function Support() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-600 rounded-full mb-6">
                 <Mail className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Email Us</h3>
-              <p className="text-gray-700 mb-4">Send us your questions</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('support.email')}</h3>
+              <p className="text-gray-700 mb-4">{t('support.emailDesc')}</p>
               <Button className="bg-orange-600 hover:bg-orange-700 text-white" onClick={(e) => { e.stopPropagation(); emailSupport(); }}>
                 support@streetsupply.in
               </Button>

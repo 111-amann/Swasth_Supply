@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, UserPlus, Search, MessageCircle, Upload, Package, Bell } from "lucide-react";
 import { Header } from "@/components/header";
 import { AuthModal } from "@/components/auth-modal";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function HowItWorks() {
+  const { t } = useLanguage();
   const [authModal, setAuthModal] = useState<{
     isOpen: boolean;
     userType?: "vendor" | "supplier";
@@ -29,10 +31,10 @@ export default function HowItWorks() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            How <span className="text-green-600">StreetSupply</span> Works
+            {t('howitworks.hero.title')}
           </h1>
           <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-            Simple steps to connect vendors with suppliers across India
+            {t('howitworks.hero.subtitle')}
           </p>
         </div>
 
@@ -40,9 +42,9 @@ export default function HowItWorks() {
         <div className="mb-20">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              For <span className="text-orange-600">Street Food Vendors</span>
+              {t('howitworks.vendors.title')}
             </h2>
-            <p className="text-lg text-gray-600">Get fresh ingredients delivered to your doorstep</p>
+            <p className="text-lg text-gray-600">{t('howitworks.vendors.subtitle')}</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 relative">

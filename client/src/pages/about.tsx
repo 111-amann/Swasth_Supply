@@ -1,8 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Target, Heart, Truck, Store, Handshake } from "lucide-react";
 import { Header } from "@/components/header";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function About() {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50">
       <Header />
@@ -10,10 +12,10 @@ export default function About() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            About <span className="text-orange-600">StreetSupply</span>
+            {t('about.hero.title')}
           </h1>
           <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-            Empowering local vendors to access raw materials easily and affordably
+            {t('about.hero.subtitle')}
           </p>
         </div>
 
@@ -23,11 +25,9 @@ export default function About() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-6">
               <Target className="w-8 h-8 text-orange-600" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">{t('about.mission.title')}</h2>
             <p className="text-xl text-gray-700 leading-relaxed max-w-4xl mx-auto">
-              To bridge the gap between street food vendors and reliable suppliers, creating a 
-              digital marketplace that ensures fresh ingredients, fair pricing, and consistent 
-              supply for India's vibrant street food ecosystem.
+              {t('about.mission.text')}
             </p>
           </CardContent>
         </Card>
@@ -35,7 +35,7 @@ export default function About() {
         {/* Problem Statement */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            The Challenge We're Solving
+            {t('about.challenge.title')}
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="border-none shadow-xl bg-red-50/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
