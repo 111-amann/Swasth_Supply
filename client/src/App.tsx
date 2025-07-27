@@ -27,7 +27,7 @@ function Router() {
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (user && !userProfile && !profileLoading) {
+      if (user && !userProfile) {
         setProfileLoading(true);
         try {
           console.log("Fetching user profile for:", user.uid);
@@ -56,7 +56,7 @@ function Router() {
     };
 
     fetchUserProfile();
-  }, [user, userProfile, profileLoading, getDocuments]);
+  }, [user, getDocuments]);
 
   if (loading) {
     return (
