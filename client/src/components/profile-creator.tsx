@@ -20,7 +20,9 @@ export function ProfileCreator({ userType, buttonText, buttonClassName }: Profil
     
     setLoading(true);
     try {
-      await addDocument("users", {
+      console.log("Creating profile for user:", user.uid, "as", userType);
+      
+      const profileData = {
         firebaseUid: user.uid,
         email: user.email || "",
         fullName: user.displayName || user.email?.split('@')[0] || "User",
@@ -32,8 +34,12 @@ export function ProfileCreator({ userType, buttonText, buttonClassName }: Profil
         businessDescription: "",
         deliveryRadius: userType === "supplier" ? 5 : null,
         isVerified: false,
-      });
+      };
       
+      console.log("Profile data to create:", profileData);
+      await addDocument("users", profileData);
+      
+      console.log("Profile created successfully, reloading page...");
       // Refresh page to trigger profile reload
       window.location.reload();
     } catch (error) {

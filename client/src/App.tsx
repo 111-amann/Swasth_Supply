@@ -37,8 +37,10 @@ function Router() {
           console.log("Found profiles:", profiles);
           
           if (profiles.length > 0) {
-            console.log("Profile found:", profiles[0]);
-            setUserProfile(profiles[0]);
+            const profile = profiles[0];
+            console.log("Profile found:", profile);
+            console.log("User type in profile:", profile.userType);
+            setUserProfile(profile);
           } else {
             console.log("No profile found - user needs to register first");
             setUserProfile(null);
@@ -87,19 +89,25 @@ function Router() {
     hasProfile: !!userProfile
   });
 
-  if (user && userProfile) {
+  if (user && userProfile && userProfile.userType) {
+    console.log("🔄 Routing based on userType:", userProfile.userType);
+    
     if (userProfile.userType === "vendor") {
-      console.log("Routing to Vendor Dashboard");
+      console.log("✅ Routing to VENDOR Dashboard for user:", user.uid);
       return <VendorDashboard userProfile={userProfile} />;
-    } else if (userProfile.userType === "supplier") {
-      console.log("Routing to Supplier Dashboard");
+    } 
+    
+    if (userProfile.userType === "supplier") {
+      console.log("✅ Routing to SUPPLIER Dashboard for user:", user.uid);
       return <SupplierDashboard userProfile={userProfile} />;
     }
+    
+    console.log("❌ Unknown userType:", userProfile.userType);
   }
 
   // If user is logged in but no profile exists, they need to complete registration
-  if (user && !profileLoading && userProfile === null) {
-    console.log("User logged in but no profile - redirecting to home for registration");
+  if (user && !profileLoading && (!userProfile || !userProfile.userType)) {
+    console.log("User logged in but no profile or userType - showing home for registration");
     // User is authenticated but hasn't completed registration
     // Let them access the home page to register as vendor or supplier
   }
