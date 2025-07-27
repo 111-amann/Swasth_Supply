@@ -9,7 +9,7 @@ import { useFirestore } from "@/hooks/use-firestore";
 import { where } from "firebase/firestore";
 
 import Home from "@/pages/home";
-import ProductsPage from "@/pages/products";
+import ProductsPage from "@/pages/products.tsx";
 import VendorDashboard from "@/pages/vendor-dashboard";
 import SupplierDashboard from "@/pages/supplier-dashboard";
 import About from "@/pages/about";

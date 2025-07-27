@@ -7,10 +7,13 @@ import {
   type InsertOrder,
   type Review, 
   type InsertReview,
+  type SupportMessage,
+  type InsertSupportMessage,
   users,
   products,
   orders,
-  reviews
+  reviews,
+  supportMessages
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -57,6 +60,15 @@ export interface IStorage {
   createReview(review: InsertReview): Promise<Review>;
   updateReview(id: string, updates: Partial<Review>): Promise<Review | undefined>;
   deleteReview(id: string): Promise<void>;
+  
+  // Support Message operations
+  getSupportMessage(id: string): Promise<SupportMessage | undefined>;
+  getSupportMessages(filters?: {
+    status?: string;
+  }): Promise<SupportMessage[]>;
+  createSupportMessage(supportMessage: InsertSupportMessage): Promise<SupportMessage>;
+  updateSupportMessage(id: string, updates: Partial<SupportMessage>): Promise<SupportMessage | undefined>;
+  deleteSupportMessage(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -64,12 +76,14 @@ export class MemStorage implements IStorage {
   private products: Map<string, Product>;
   private orders: Map<string, Order>;
   private reviews: Map<string, Review>;
+  private supportMessages: Map<string, SupportMessage>;
 
   constructor() {
     this.users = new Map();
     this.products = new Map();
     this.orders = new Map();
     this.reviews = new Map();
+    this.supportMessages = new Map();
     
     // No sample data - using Firebase for all data
   }
@@ -277,25 +291,71 @@ export class MemStorage implements IStorage {
   async deleteReview(id: string): Promise<void> {
     this.reviews.delete(id);
   }
+
+  // Support Message operations
+  async getSupportMessage(id: string): Promise<SupportMessage | undefined> {
+    return this.supportMessages.get(id);
+  }
+
+  async getSupportMessages(filters?: {
+    status?: string;
+  }): Promise<SupportMessage[]> {
+    let messages = Array.from(this.supportMessages.values());
+    
+    if (filters?.status) {
+      messages = messages.filter(m => m.status === filters.status);
+    }
+    
+    return messages.sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+  }
+
+  async createSupportMessage(insertSupportMessage: InsertSupportMessage): Promise<SupportMessage> {
+    const id = randomUUID();
+    const supportMessage: SupportMessage = { 
+      ...insertSupportMessage, 
+      id,
+      status: insertSupportMessage.status ?? "open",
+      createdAt: new Date()
+    };
+    this.supportMessages.set(id, supportMessage);
+    return supportMessage;
+  }
+
+  async updateSupportMessage(id: string, updates: Partial<SupportMessage>): Promise<SupportMessage | undefined> {
+    const message = this.supportMessages.get(id);
+    if (!message) return undefined;
+    
+    const updatedMessage = { ...message, ...updates };
+    this.supportMessages.set(id, updatedMessage);
+    return updatedMessage;
+  }
+
+  async deleteSupportMessage(id: string): Promise<void> {
+    this.supportMessages.delete(id);
+  }
 }
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
+    if (!db) throw new Error("Database not available");
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async getUserByFirebaseUid(firebaseUid: string): Promise<User | undefined> {
+    if (!db) throw new Error("Database not available");
     const [user] = await db.select().from(users).where(eq(users.firebaseUid, firebaseUid));
     return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
+    if (!db) throw new Error("Database not available");
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    if (!db) throw new Error("Database not available");
     const [user] = await db
       .insert(users)
       .values({
@@ -311,6 +371,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+    if (!db) throw new Error("Database not available");
     const [user] = await db
       .update(users)
       .set(updates)
@@ -320,11 +381,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(id: string): Promise<void> {
+    if (!db) throw new Error("Database not available");
     await db.delete(users).where(eq(users.id, id));
   }
 
   // Product operations
   async getProduct(id: string): Promise<Product | undefined> {
+    if (!db) throw new Error("Database not available");
     const [product] = await db.select().from(products).where(eq(products.id, id));
     return product || undefined;
   }
@@ -334,6 +397,7 @@ export class DatabaseStorage implements IStorage {
     location?: string;
     supplierId?: string;
   }): Promise<Product[]> {
+    if (!db) throw new Error("Database not available");
     let conditions = [eq(products.isActive, true)];
 
     if (filters?.category) {
@@ -355,6 +419,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    if (!db) throw new Error("Database not available");
     const [product] = await db
       .insert(products)
       .values({
@@ -369,6 +434,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProduct(id: string, updates: Partial<Product>): Promise<Product | undefined> {
+    if (!db) throw new Error("Database not available");
     const [product] = await db
       .update(products)
       .set(updates)
@@ -378,11 +444,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProduct(id: string): Promise<void> {
+    if (!db) throw new Error("Database not available");
     await db.delete(products).where(eq(products.id, id));
   }
 
   // Order operations
   async getOrder(id: string): Promise<Order | undefined> {
+    if (!db) throw new Error("Database not available");
     const [order] = await db.select().from(orders).where(eq(orders.id, id));
     return order || undefined;
   }
@@ -392,6 +460,7 @@ export class DatabaseStorage implements IStorage {
     supplierId?: string;
     status?: string;
   }): Promise<Order[]> {
+    if (!db) throw new Error("Database not available");
     let conditions = [];
 
     if (filters?.vendorId) {
@@ -417,6 +486,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
+    if (!db) throw new Error("Database not available");
     const [order] = await db
       .insert(orders)
       .values({
@@ -431,6 +501,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrder(id: string, updates: Partial<Order>): Promise<Order | undefined> {
+    if (!db) throw new Error("Database not available");
     const [order] = await db
       .update(orders)
       .set(updates)
@@ -440,11 +511,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteOrder(id: string): Promise<void> {
+    if (!db) throw new Error("Database not available");
     await db.delete(orders).where(eq(orders.id, id));
   }
 
   // Review operations
   async getReview(id: string): Promise<Review | undefined> {
+    if (!db) throw new Error("Database not available");
     const [review] = await db.select().from(reviews).where(eq(reviews.id, id));
     return review || undefined;
   }
@@ -453,6 +526,7 @@ export class DatabaseStorage implements IStorage {
     supplierId?: string;
     vendorId?: string;
   }): Promise<Review[]> {
+    if (!db) throw new Error("Database not available");
     let conditions = [];
 
     if (filters?.supplierId) {
@@ -474,6 +548,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createReview(insertReview: InsertReview): Promise<Review> {
+    if (!db) throw new Error("Database not available");
     const [review] = await db
       .insert(reviews)
       .values({
@@ -485,6 +560,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateReview(id: string, updates: Partial<Review>): Promise<Review | undefined> {
+    if (!db) throw new Error("Database not available");
     const [review] = await db
       .update(reviews)
       .set(updates)
@@ -494,8 +570,63 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteReview(id: string): Promise<void> {
+    if (!db) throw new Error("Database not available");
     await db.delete(reviews).where(eq(reviews.id, id));
+  }
+
+  // Support Message operations
+  async getSupportMessage(id: string): Promise<SupportMessage | undefined> {
+    if (!db) throw new Error("Database not available");
+    const [message] = await db.select().from(supportMessages).where(eq(supportMessages.id, id));
+    return message || undefined;
+  }
+
+  async getSupportMessages(filters?: {
+    status?: string;
+  }): Promise<SupportMessage[]> {
+    if (!db) throw new Error("Database not available");
+    let conditions = [];
+
+    if (filters?.status) {
+      conditions.push(eq(supportMessages.status, filters.status));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const results = await db
+      .select()
+      .from(supportMessages)
+      .where(whereClause)
+      .orderBy(desc(supportMessages.createdAt));
+
+    return results;
+  }
+
+  async createSupportMessage(insertSupportMessage: InsertSupportMessage): Promise<SupportMessage> {
+    if (!db) throw new Error("Database not available");
+    const [message] = await db
+      .insert(supportMessages)
+      .values({
+        ...insertSupportMessage,
+        status: insertSupportMessage.status ?? "open",
+      })
+      .returning();
+    return message;
+  }
+
+  async updateSupportMessage(id: string, updates: Partial<SupportMessage>): Promise<SupportMessage | undefined> {
+    if (!db) throw new Error("Database not available");
+    const [message] = await db
+      .update(supportMessages)
+      .set(updates)
+      .where(eq(supportMessages.id, id))
+      .returning();
+    return message || undefined;
+  }
+
+  async deleteSupportMessage(id: string): Promise<void> {
+    if (!db) throw new Error("Database not available");
+    await db.delete(supportMessages).where(eq(supportMessages.id, id));
   }
 }
 
-export const storage = process.env.DATABASE_URL ? new DatabaseStorage() : new MemStorage();
+export const storage = (process.env.DATABASE_URL && db) ? new DatabaseStorage() : new MemStorage();
