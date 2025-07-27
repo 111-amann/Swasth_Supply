@@ -37,7 +37,7 @@ function Router() {
           console.log("Found profiles:", profiles);
           
           if (profiles.length > 0) {
-            const profile = profiles[0];
+            const profile = profiles[0] as any;
             console.log("Profile found:", profile);
             console.log("User type in profile:", profile.userType);
             setUserProfile(profile);

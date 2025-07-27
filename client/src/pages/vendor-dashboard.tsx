@@ -223,7 +223,7 @@ export default function VendorDashboard({ userProfile }: VendorDashboardProps) {
                   >
                     {categories.map(category => (
                       <option key={category} value={category}>
-                        {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
+                        {category === "all" ? "All Categories" : (category as string).charAt(0).toUpperCase() + (category as string).slice(1)}
                       </option>
                     ))}
                   </select>
@@ -373,7 +373,7 @@ export default function VendorDashboard({ userProfile }: VendorDashboardProps) {
                              order.status === "shipped" ? "🚚 On the Way" :
                              order.status === "delivered" ? "📦 Delivered" :
                              order.status === "cancelled" ? "❌ Cancelled" :
-                             order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                             (order.status as string).charAt(0).toUpperCase() + (order.status as string).slice(1)}
                           </Badge>
                         </div>
                       </CardHeader>
