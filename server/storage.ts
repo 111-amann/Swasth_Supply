@@ -1,76 +1,17 @@
 import { 
   type User, 
-  type InsertUser, 
-  type Product, 
-  type InsertProduct,
+  type Product,
   type Order, 
-  type InsertOrder,
-  type Review, 
-  type InsertReview,
-  type SupportMessage,
-  type InsertSupportMessage,
-  users,
-  products,
-  orders,
-  reviews,
-  supportMessages
+  type Review
 } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
 
-// Storage interface for Swasth Supply marketplace
+// Firebase-based storage interface - not actively used as all operations handled in client
 export interface IStorage {
-  // User operations
-  getUser(id: string): Promise<User | undefined>;
-  getUserByFirebaseUid(firebaseUid: string): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
-  deleteUser(id: string): Promise<void>;
-  
-  // Product operations
-  getProduct(id: string): Promise<Product | undefined>;
-  getProducts(filters?: {
-    category?: string;
-    location?: string;
-    supplierId?: string;
-  }): Promise<Product[]>;
-  createProduct(product: InsertProduct): Promise<Product>;
-  updateProduct(id: string, updates: Partial<Product>): Promise<Product | undefined>;
-  deleteProduct(id: string): Promise<void>;
-  
-  // Order operations
-  getOrder(id: string): Promise<Order | undefined>;
-  getOrders(filters?: {
-    vendorId?: string;
-    supplierId?: string;
-    status?: string;
-  }): Promise<Order[]>;
-  createOrder(order: InsertOrder): Promise<Order>;
-  updateOrder(id: string, updates: Partial<Order>): Promise<Order | undefined>;
-  deleteOrder(id: string): Promise<void>;
-  
-  // Review operations
-  getReview(id: string): Promise<Review | undefined>;
-  getReviews(filters?: {
-    supplierId?: string;
-    vendorId?: string;
-  }): Promise<Review[]>;
-  createReview(review: InsertReview): Promise<Review>;
-  updateReview(id: string, updates: Partial<Review>): Promise<Review | undefined>;
-  deleteReview(id: string): Promise<void>;
-  
-  // Support Message operations
-  getSupportMessage(id: string): Promise<SupportMessage | undefined>;
-  getSupportMessages(filters?: {
-    status?: string;
-  }): Promise<SupportMessage[]>;
-  createSupportMessage(supportMessage: InsertSupportMessage): Promise<SupportMessage>;
-  updateSupportMessage(id: string, updates: Partial<SupportMessage>): Promise<SupportMessage | undefined>;
-  deleteSupportMessage(id: string): Promise<void>;
+  // Legacy interface - Firebase SDK handles all operations directly in client components
 }
 
+// Legacy memory storage - not used in Firebase implementation
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private products: Map<string, Product>;
@@ -629,4 +570,5 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = (process.env.DATABASE_URL && db) ? new DatabaseStorage() : new MemStorage();
+// Using Firebase for all data operations - this storage is not actively used
+export const storage = new MemStorage();

@@ -66,10 +66,21 @@ function Router() {
     );
   }
 
+  // Debug logging for authentication routing
+  console.log("Auth Debug:", {
+    user: user?.uid,
+    userProfile,
+    userType: userProfile?.userType,
+    hasUser: !!user,
+    hasProfile: !!userProfile
+  });
+
   if (user && userProfile) {
     if (userProfile.userType === "vendor") {
+      console.log("Routing to Vendor Dashboard");
       return <VendorDashboard userProfile={userProfile} />;
     } else if (userProfile.userType === "supplier") {
+      console.log("Routing to Supplier Dashboard");
       return <SupplierDashboard userProfile={userProfile} />;
     }
   }

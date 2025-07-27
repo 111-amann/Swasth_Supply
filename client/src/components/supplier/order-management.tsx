@@ -1,48 +1,38 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useFirestore } from "@/hooks/use-firestore";
-import { where, orderBy } from "firebase/firestore";
-import {
-  Clock,
-  CheckCircle,
-  Package,
-  Truck,
-  Phone,
-  MapPin,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useOrders } from "@/hooks/use-orders";
+import { useAuth } from "@/hooks/use-auth";
+import { ShoppingCart, Clock, CheckCircle, XCircle, Truck, Package } from "lucide-react";
 
 interface OrderManagementProps {
   supplierId: string;
 }
 
 export function OrderManagement({ supplierId }: OrderManagementProps) {
-  const { updateDocument, useCollection } = useFirestore();
+  const { user } = useAuth();
+  const { orders, updateOrderStatus, isUpdatingOrder } = useOrders();
+  const [updateNotes, setUpdateNotes] = useState<{ [orderId: string]: string }>({});
 
-  const {
-    documents: fetchedOrders,
-    loading,
-    error,
-  } = useCollection("orders", [
-    where("supplierId", "==", supplierId),
-    orderBy("orderDate", "desc"),
-  ]);
-
-  const orders = fetchedOrders?.length ? fetchedOrders : [];
+  // Filter orders for this supplier
+  const supplierOrders = orders.filter(order => order.supplierId === (supplierId || user?.uid));
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
-      await updateDocument("orders", orderId, {
+      await updateOrderStatus({
+        id: orderId,
         status: newStatus,
-        ...(newStatus === "delivered" && { actualDelivery: new Date() }),
+        notes: updateNotes[orderId] || undefined,
+      });
+      
+      // Clear the notes after update
+      setUpdateNotes(prev => {
+        const newNotes = { ...prev };
+        delete newNotes[orderId];
+        return newNotes;
       });
     } catch (error) {
       console.error("Error updating order status:", error);
@@ -50,153 +40,195 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
   };
 
   const getStatusIcon = (status: string) => {
-    const icons: Record<string, JSX.Element> = {
-      pending: <Clock className="w-4 h-4" />,
-      confirmed: <CheckCircle className="w-4 h-4" />,
-      preparing: <Package className="w-4 h-4" />,
-      ready: <Truck className="w-4 h-4" />,
-      delivered: <CheckCircle className="w-4 h-4" />,
-    };
-    return icons[status] ?? <Package className="w-4 h-4" />;
+    switch (status) {
+      case "pending":
+        return <Clock className="h-4 w-4" />;
+      case "confirmed":
+        return <CheckCircle className="h-4 w-4" />;
+      case "preparing":
+        return <Package className="h-4 w-4" />;
+      case "shipped":
+        return <Truck className="h-4 w-4" />;
+      case "delivered":
+        return <CheckCircle className="h-4 w-4" />;
+      case "cancelled":
+        return <XCircle className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
+    }
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      pending: "bg-yellow-100 text-yellow-800",
-      confirmed: "bg-blue-100 text-blue-800",
-      preparing: "bg-orange-100 text-orange-800",
-      ready: "bg-purple-100 text-purple-800",
-      delivered: "bg-green-100 text-green-800",
-      cancelled: "bg-red-100 text-red-800",
-    };
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "confirmed":
+        return "bg-blue-100 text-blue-800";
+      case "preparing":
+        return "bg-purple-100 text-purple-800";
+      case "shipped":
+        return "bg-indigo-100 text-indigo-800";
+      case "delivered":
+        return "bg-green-100 text-green-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
 
+  const getAvailableActions = (status: string) => {
+    switch (status) {
+      case "pending":
+        return ["confirmed", "cancelled"];
+      case "confirmed":
+        return ["preparing", "cancelled"];
+      case "preparing":
+        return ["shipped"];
+      case "shipped":
+        return ["delivered"];
+      default:
+        return [];
+    }
+  };
+
+  if (supplierOrders.length === 0) {
     return (
-      <Badge className={`${variants[status as keyof typeof variants]} capitalize`}>
-        {getStatusIcon(status)}
-        <span className="ml-1">{status}</span>
-      </Badge>
+      <div className="text-center py-12">
+        <ShoppingCart className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Orders Yet</h3>
+        <p className="text-muted-foreground">
+          When vendors place orders for your products, they will appear here.
+        </p>
+      </div>
     );
-  };
-
-  const statusOptions = [
-    { value: "pending", label: "Pending" },
-    { value: "confirmed", label: "Confirmed" },
-    { value: "preparing", label: "Preparing" },
-    { value: "ready", label: "Ready for Pickup" },
-    { value: "delivered", label: "Delivered" },
-    { value: "cancelled", label: "Cancelled" },
-  ];
+  }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Incoming Orders</h2>
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Order Management</h2>
+        <p className="text-muted-foreground">
+          Manage incoming orders from vendors and update delivery status
+        </p>
+      </div>
 
-      {loading && <p className="text-muted-foreground">Loading orders...</p>}
-      {error && <p className="text-red-500">Failed to load orders.</p>}
+      {/* Order Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[
+          { label: "Total Orders", value: supplierOrders.length, color: "text-blue-600" },
+          { label: "Pending", value: supplierOrders.filter(o => o.status === "pending").length, color: "text-yellow-600" },
+          { label: "In Progress", value: supplierOrders.filter(o => ["confirmed", "preparing", "shipped"].includes(o.status)).length, color: "text-purple-600" },
+          { label: "Delivered", value: supplierOrders.filter(o => o.status === "delivered").length, color: "text-green-600" },
+        ].map((stat, index) => (
+          <Card key={index}>
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
+      {/* Orders List */}
       <div className="space-y-4">
-        {orders.map((order: any) => (
-          <Card key={order.id} className="supplier-card">
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start mb-4">
+        {supplierOrders.map((order) => (
+          <Card key={order.id} className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-semibold text-lg">{order.orderNumber}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {order.vendorName} • {order.orderDate}
-                  </p>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    {getStatusIcon(order.status)}
+                    Order #{order.id.slice(-8)}
+                  </CardTitle>
+                  <CardDescription>
+                    From {order.vendorName || "Vendor"} • {order.orderDate.toLocaleDateString()}
+                  </CardDescription>
                 </div>
-                <Select
-                  value={order.status}
-                  onValueChange={(value) => handleStatusUpdate(order.id, value)}
-                >
-                  <SelectTrigger className="w-48">
-                    <SelectValue>{getStatusBadge(order.status)}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center">
-                          {getStatusIcon(option.value)}
-                          <span className="ml-2">{option.label}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Badge className={`${getStatusColor(order.status)} border-0`}>
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                </Badge>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              {/* Order Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p><strong>Customer:</strong> {order.vendorName || "Unknown Vendor"}</p>
+                  <p><strong>Total Amount:</strong> ₹{order.totalAmount.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p><strong>Delivery Address:</strong> {order.deliveryAddress}</p>
+                  {order.estimatedDelivery && (
+                    <p><strong>Estimated Delivery:</strong> {order.estimatedDelivery.toLocaleDateString()}</p>
+                  )}
+                </div>
               </div>
 
-              <div className="border-t pt-4">
-                <div className="grid md:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Items</p>
-                    <div className="font-medium">
-                      {order.items.map((item: any, index: number) => (
-                        <div key={index}>
-                          {item.name} ({item.quantity} {item.unit})
-                        </div>
-                      ))}
+              {/* Items */}
+              <div>
+                <p className="font-semibold mb-2">Ordered Items:</p>
+                <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                  {order.items.map((item, index) => (
+                    <div key={index} className="flex justify-between items-center text-sm">
+                      <span className="font-medium">{item.productName}</span>
+                      <span className="text-muted-foreground">
+                        {item.quantity} {item.unit} × ₹{item.price} = ₹{(item.price * item.quantity).toFixed(2)}
+                      </span>
                     </div>
-                  </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notes */}
+              {order.notes && (
+                <div className="pt-2 border-t">
+                  <p className="text-sm"><strong>Customer Notes:</strong> {order.notes}</p>
+                </div>
+              )}
+
+              {/* Status Update Actions */}
+              {getAvailableActions(order.status).length > 0 && (
+                <div className="pt-4 border-t space-y-3">
                   <div>
-                    <p className="text-sm text-muted-foreground">Delivery Address</p>
-                    <p className="font-medium flex items-center">
-                      <MapPin className="mr-1" size={14} />
-                      {order.deliveryAddress}
-                    </p>
+                    <Label htmlFor={`notes-${order.id}`} className="text-sm font-medium">
+                      Update Notes (Optional)
+                    </Label>
+                    <Textarea
+                      id={`notes-${order.id}`}
+                      placeholder="Add any notes about this order update..."
+                      value={updateNotes[order.id] || ""}
+                      onChange={(e) => setUpdateNotes(prev => ({
+                        ...prev,
+                        [order.id]: e.target.value
+                      }))}
+                      className="mt-1"
+                    />
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Amount</p>
-                    <p className="font-semibold text-secondary text-lg">
-                      ₹{order.totalAmount}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    {order.status === "delivered" ? (
-                      <Button variant="outline" className="flex-1" disabled>
-                        Completed
-                      </Button>
-                    ) : (
+                  
+                  <div className="flex gap-2 flex-wrap">
+                    {getAvailableActions(order.status).map((action) => (
                       <Button
-                        className="flex-1 bg-secondary hover:bg-secondary/90"
-                        onClick={() => handleStatusUpdate(order.id, "confirmed")}
-                        disabled={order.status !== "pending"}
+                        key={action}
+                        size="sm"
+                        variant={action === "cancelled" ? "destructive" : "default"}
+                        onClick={() => handleStatusUpdate(order.id, action)}
+                        disabled={isUpdatingOrder}
+                        className={action === "cancelled" ? "" : "bg-orange-600 hover:bg-orange-700"}
                       >
-                        {order.status === "pending" ? "Confirm" : "Update Status"}
-                      </Button>
-                    )}
-                    <Button variant="outline" size="icon">
-                      <Phone size={16} />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {order.status !== "delivered" && order.status !== "cancelled" && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-blue-800">Order Progress:</span>
-                    <div className="flex items-center space-x-2">
-                      {["pending", "confirmed", "preparing", "ready", "delivered"].map(
-                        (step, index) => {
-                          const isCompleted =
-                            statusOptions.findIndex((s) => s.value === order.status) >= index;
-                          const isCurrent = step === order.status;
-
-                          return (
-                            <div
-                              key={step}
-                              className={`w-3 h-3 rounded-full ${
-                                isCompleted
-                                  ? "bg-blue-500"
-                                  : isCurrent
-                                  ? "bg-blue-300 animate-pulse"
-                                  : "bg-gray-300"
-                              }`}
-                            />
-                          );
+                        {isUpdatingOrder ? "Updating..." : 
+                          action === "confirmed" ? "Confirm Order" :
+                          action === "preparing" ? "Mark as Preparing" :
+                          action === "shipped" ? "Mark as Shipped" :
+                          action === "delivered" ? "Mark as Delivered" :
+                          action === "cancelled" ? "Cancel Order" :
+                          action.charAt(0).toUpperCase() + action.slice(1)
                         }
-                      )}
-                    </div>
+                      </Button>
+                    ))}
                   </div>
                 </div>
               )}
@@ -204,18 +236,6 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
           </Card>
         ))}
       </div>
-
-      {orders.length === 0 && !loading && (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Package className="mx-auto mb-4 text-muted-foreground" size={48} />
-            <h3 className="text-lg font-semibold mb-2">No orders yet</h3>
-            <p className="text-muted-foreground">
-              Orders from vendors will appear here once you list your products.
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

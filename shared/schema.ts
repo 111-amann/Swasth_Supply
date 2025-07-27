@@ -1,78 +1,80 @@
-import { sql } from "drizzle-orm";
-import {
-  pgTable,
-  text,
-  varchar,
-  decimal,
-  integer,
-  timestamp,
-  boolean,
-  jsonb,
-} from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// USERS TABLE
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  firebaseUid: text("firebase_uid").notNull().unique(),
-  email: text("email").notNull().unique(),
-  fullName: text("full_name").notNull(),
-  phone: text("phone").notNull(),
-  userType: text("user_type").notNull(), // 'vendor' or 'supplier'
-  location: text("location").notNull(),
-  businessName: text("business_name"),
-  businessAddress: text("business_address"),
-  businessDescription: text("business_description"),
-  deliveryRadius: integer("delivery_radius"), // for suppliers, in km
-  isVerified: boolean("is_verified").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// Firebase-based TypeScript interfaces for StreetSupply B2B Marketplace
 
-// PRODUCTS TABLE
-export const products = pgTable("products", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  supplierId: varchar("supplier_id").references(() => users.id).notNull(),
-  name: text("name").notNull(),
-  description: text("description"),
-  category: text("category").notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  unit: text("unit").notNull(), // kg, liter, piece, pack
-  stockQuantity: integer("stock_quantity").notNull(),
-  minimumOrder: integer("minimum_order").default(1),
-  deliveryTime: text("delivery_time").notNull(),
-  imageUrl: text("image_url"),
-  supplierName: text("supplier_name"),           // ← Added from comp2
-  supplierLocation: text("supplier_location"),   // ← Added from comp2
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// USER INTERFACE
+export interface User {
+  id: string;
+  firebaseUid: string;
+  email: string;
+  fullName: string;
+  phone: string;
+  userType: 'vendor' | 'supplier';
+  location: string;
+  businessName?: string;
+  businessAddress?: string;
+  businessDescription?: string;
+  deliveryRadius?: number; // for suppliers, in km
+  isVerified: boolean;
+  createdAt: Date;
+}
 
-// ORDERS TABLE
-export const orders = pgTable("orders", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  vendorId: varchar("vendor_id").references(() => users.id).notNull(),
-  supplierId: varchar("supplier_id").references(() => users.id).notNull(),
-  items: jsonb("items").notNull(), // array of {productId, quantity, price}
-  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
-  status: text("status").notNull().default("pending"),
-  deliveryAddress: text("delivery_address").notNull(),
-  orderDate: timestamp("order_date").defaultNow(),
-  estimatedDelivery: timestamp("estimated_delivery"),
-  actualDelivery: timestamp("actual_delivery"),
-  notes: text("notes"),
-});
+// PRODUCT INTERFACE
+export interface Product {
+  id: string;
+  supplierId: string;
+  name: string;
+  description?: string;
+  category: string;
+  price: number;
+  unit: string; // kg, liter, piece, pack
+  stockQuantity: number;
+  minimumOrder?: number;
+  deliveryTime: string;
+  imageUrl?: string;
+  supplierName?: string;
+  supplierLocation?: string;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
-// REVIEWS TABLE
-export const reviews = pgTable("reviews", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  orderId: varchar("order_id").references(() => orders.id).notNull(),
-  vendorId: varchar("vendor_id").references(() => users.id).notNull(),
-  supplierId: varchar("supplier_id").references(() => users.id).notNull(),
-  rating: integer("rating").notNull(),
-  comment: text("comment"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// ORDER INTERFACE
+export interface Order {
+  id: string;
+  vendorId: string;
+  supplierId: string;
+  items: OrderItem[];
+  totalAmount: number;
+  status: 'pending' | 'confirmed' | 'preparing' | 'shipped' | 'delivered' | 'cancelled';
+  deliveryAddress: string;
+  orderDate: Date;
+  estimatedDelivery?: Date;
+  actualDelivery?: Date;
+  notes?: string;
+  vendorName?: string;
+  supplierName?: string;
+}
+
+// ORDER ITEM INTERFACE
+export interface OrderItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  price: number;
+  unit: string;
+}
+
+// REVIEW INTERFACE
+export interface Review {
+  id: string;
+  orderId: string;
+  vendorId: string;
+  supplierId: string;
+  rating: number;
+  comment?: string;
+  createdAt: Date;
+}
 
 // SUPPORT MESSAGES TABLE ← Added from comp1
 export const supportMessages = pgTable("support_messages", {
