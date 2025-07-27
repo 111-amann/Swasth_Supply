@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { AuthModal } from "@/components/auth-modal";
 import { ChatSupport } from "@/components/chat-support";
+import { FirebaseProducts } from "@/components/firebase-products";
 import { 
   Store, MapPin, IndianRupee, Shield, Utensils, Truck, Search, 
   CheckCircle, DollarSign, Clock, Star, Quote, ChevronRight,
@@ -280,6 +281,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Firebase Products Demo Section */}
+      <section className="py-16 bg-gray-50">
+        <FirebaseProducts />
+      </section>
+
       {/* Testimonials Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -379,8 +385,6 @@ export default function Home() {
       <AuthModal
         isOpen={authModal.isOpen}
         onClose={closeAuthModal}
-        userType={authModal.userType}
-        mode={authModal.mode}
       />
 
       {/* Chat Support */}
