@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { AuthModal } from "@/components/auth-modal";
 import { ChatSupport } from "@/components/chat-support";
-import { FirebaseProducts } from "@/components/firebase-products";
 import { 
   Store, MapPin, IndianRupee, Shield, Utensils, Truck, Search, 
   CheckCircle, DollarSign, Clock, Star, Quote, ChevronRight,
@@ -279,11 +278,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Firebase Products Demo Section */}
-      <section className="py-16 bg-gray-50">
-        <FirebaseProducts />
       </section>
 
       {/* Testimonials Section */}
