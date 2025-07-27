@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Store } from "lucide-react";
+import { Store, Languages } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useLanguage } from "@/hooks/use-language";
 
 export function Header() {
   const [location] = useLocation();
+  const { language, toggleLanguage, t } = useLanguage();
 
   const isActive = (path: string) => location === path;
 
@@ -31,7 +33,7 @@ export function Header() {
                   isActive('/') ? 'text-primary bg-primary/10' : ''
                 }`}
               >
-                Home
+                {t('nav.home')}
               </Button>
             </Link>
             <Link href="/about">
@@ -41,7 +43,7 @@ export function Header() {
                   isActive('/about') ? 'text-primary bg-primary/10' : ''
                 }`}
               >
-                About
+                {t('nav.about')}
               </Button>
             </Link>
             <Link href="/how-it-works">
@@ -51,7 +53,7 @@ export function Header() {
                   isActive('/how-it-works') ? 'text-primary bg-primary/10' : ''
                 }`}
               >
-                How it Works
+                {t('nav.howItWorks')}
               </Button>
             </Link>
 
@@ -62,23 +64,34 @@ export function Header() {
                   isActive('/support') ? 'text-primary bg-primary/10' : ''
                 }`}
               >
-                Support
+                {t('nav.support')}
               </Button>
             </Link>
           </div>
 
           <div className="flex items-center space-x-3">
+            <Button
+              variant="outline"
+              onClick={toggleLanguage}
+              className="border-primary text-primary hover:bg-primary hover:text-white"
+              title={language === 'en' ? 'Switch to Hindi' : 'Switch to English'}
+            >
+              <Languages className="mr-2 h-4 w-4" />
+              {language === 'en' ? 'हिंदी' : 'English'}
+            </Button>
+            
             <Link href="/">
               <Button
                 variant="outline"
                 className="border-primary text-primary hover:bg-primary hover:text-white"
               >
-                Login
+                {t('nav.login')}
               </Button>
             </Link>
+            
             <Link href="/">
-              <Button className="bg-primary hover:bg-primary/90">
-                Sign Up
+              <Button className="bg-primary text-white hover:bg-primary/90">
+                {t('nav.signup')}
               </Button>
             </Link>
           </div>

@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { AuthModal } from "@/components/auth-modal";
 import { ChatSupport } from "@/components/chat-support";
+import { Header } from "@/components/header";
+import { useLanguage } from "@/hooks/use-language";
 import { 
   Store, MapPin, IndianRupee, Shield, Utensils, Truck, Search, 
   CheckCircle, DollarSign, Clock, Star, Quote, ChevronRight,
@@ -21,8 +23,7 @@ export default function Home() {
   }>({
     isOpen: false,
   });
-  const [language, setLanguage] = useState<"en" | "hi">("en");
-  const [searchQuery, setSearchQuery] = useState("");
+  const { t } = useLanguage();
 
   const openAuthModal = (userType?: "vendor" | "supplier", mode: "login" | "signup" = "login") => {
     setAuthModal({ isOpen: true, userType, mode });
@@ -32,9 +33,7 @@ export default function Home() {
     setAuthModal({ isOpen: false });
   };
 
-  const toggleLanguage = () => {
-    setLanguage(prev => prev === "en" ? "hi" : "en");
-  };
+
 
   const categories = [
     { name: "Vegetables", icon: "🥕", desc: "Fresh vegetables & produce" },
@@ -71,89 +70,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold text-primary flex items-center">
-                  <Store className="mr-2" size={28} />
-                  StreetSupply
-                </h1>
-                <p className="text-xs text-muted-foreground font-medium">स्ट्रीट सप्लाई</p>
-              </div>
-              
-              {/* Search Bar */}
-              <div className="hidden lg:flex items-center max-w-md">
-                <div className="relative w-full">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                  <Input
-                    placeholder="Search raw materials..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2 w-full"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <div className="hidden md:flex items-center space-x-6">
-              <Link href="/about">
-                <Button variant="ghost" className="text-muted-foreground hover:text-primary">
-                  About
-                </Button>
-              </Link>
-              <Link href="/how-it-works">
-                <Button variant="ghost" className="text-muted-foreground hover:text-primary">
-                  How it Works
-                </Button>
-              </Link>
-
-              <Link href="/support">
-                <Button variant="ghost" className="text-muted-foreground hover:text-primary">
-                  Support
-                </Button>
-              </Link>
-              
-              {/* Language Toggle */}
-              <Button
-                onClick={toggleLanguage}
-                variant="ghost"
-                size="sm"
-                className="flex items-center space-x-1 text-muted-foreground hover:text-primary"
-              >
-                <Languages size={16} />
-                <span>{language === "en" ? "English" : "हिंदी"}</span>
-              </Button>
-              
-              <Button
-                onClick={() => openAuthModal("vendor", "login")}
-                variant="outline"
-                className="border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white"
-              >
-                Login
-              </Button>
-              <Button
-                onClick={() => openAuthModal("vendor", "signup")}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                Get Started
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              StreetSupply - B2B Marketplace
+              {t('home.hero.title')}
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Connect street food vendors with reliable suppliers across India. Get fresh ingredients at wholesale prices with fast delivery.
+              {t('home.hero.subtitle')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -163,7 +90,7 @@ export default function Home() {
                 className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
               >
                 <Users className="mr-2" size={20} />
-                Join as Vendor
+                {t('home.hero.vendorButton')}
               </Button>
               <Button
                 onClick={() => openAuthModal("supplier", "signup")}
@@ -172,7 +99,7 @@ export default function Home() {
                 className="border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white px-8 py-3"
               >
                 <Truck className="mr-2" size={20} />
-                Join as Supplier
+                {t('home.hero.supplierButton')}
               </Button>
             </div>
             
