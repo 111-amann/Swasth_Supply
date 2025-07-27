@@ -278,28 +278,26 @@ export function ProductManagement() {
                 <CardContent className="p-0">
                   {/* Square image container */}
                   <div className="aspect-square relative bg-gray-50">
-                    {product.imageUrl && product.imageUrl !== 'undefined' ? (
+                    {product.imageUrl && product.imageUrl !== 'undefined' && product.imageUrl !== 'null' ? (
                       <img
-                        src={
-                          product.imageUrl.startsWith('http') 
-                            ? product.imageUrl 
-                            : product.imageUrl.startsWith('/uploads/')
-                            ? `${window.location.origin}${product.imageUrl}`
-                            : `${window.location.origin}/uploads/${product.imageUrl}`
-                        }
+                        src={product.imageUrl}
                         alt={product.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           console.log('Image failed to load:', product.imageUrl);
-                          const parentDiv = e.currentTarget.parentElement;
-                          if (parentDiv) {
-                            parentDiv.innerHTML = `
-                              <div class="w-full h-full flex items-center justify-center bg-gray-100">
-                                <svg class="w-12 h-12 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                                </svg>
-                              </div>
+                          // Show fallback on error
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parentDiv = target.parentElement;
+                          if (parentDiv && !parentDiv.querySelector('.fallback-icon')) {
+                            const fallbackDiv = document.createElement('div');
+                            fallbackDiv.className = 'w-full h-full flex items-center justify-center bg-gray-100 fallback-icon';
+                            fallbackDiv.innerHTML = `
+                              <svg class="w-12 h-12 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                              </svg>
                             `;
+                            parentDiv.appendChild(fallbackDiv);
                           }
                         }}
                       />

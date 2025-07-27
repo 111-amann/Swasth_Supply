@@ -96,6 +96,22 @@ export default function ProductsPage() {
                   </div>
                 </CardHeader>
                 
+                {/* Product Image */}
+                {product.imageUrl && product.imageUrl !== 'undefined' && product.imageUrl !== 'null' && (
+                  <div className="aspect-video relative bg-gray-50 overflow-hidden">
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Hide image on error
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+                
                 <CardContent className="space-y-4">
                   {product.description && (
                     <p className="text-sm text-muted-foreground line-clamp-3">
