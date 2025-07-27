@@ -6,7 +6,7 @@ import { IndianRupee, Package, Clock, MapPin, Store, ShoppingCart } from "lucide
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProductsPage() {
-  const { products, loading } = useProducts();
+  const { products, loading, error } = useProducts();
   const { toast } = useToast();
 
   const handleOrder = (product: any) => {
@@ -52,16 +52,31 @@ export default function ProductsPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Available Products ({products.length})
-          </h2>
-          <p className="text-muted-foreground">
-            All products fetched directly from Firebase database
-          </p>
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-muted-foreground">Loading products...</div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-muted-foreground mb-4">Unable to load products. Please check your connection.</p>
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Retry
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Available Products ({products.length})
+              </h2>
+              <p className="text-muted-foreground">
+                All products fetched directly from Firebase database
+              </p>
+            </div>
 
-        {products.length === 0 ? (
+            {products.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
               <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -173,6 +188,8 @@ export default function ProductsPage() {
               </Card>
             ))}
           </div>
+        )}
+          </>
         )}
       </main>
     </div>

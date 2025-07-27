@@ -17,7 +17,7 @@ export function SupplierSearch({ onOrderClick }: SupplierSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState("all");
-  const { products, loading } = useProducts();
+  const { products, loading, error } = useProducts();
   const { toast } = useToast();
 
   // Filter products based on search criteria
@@ -84,6 +84,27 @@ export function SupplierSearch({ onOrderClick }: SupplierSearchProps) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">Loading suppliers...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Find Suppliers</h2>
+          <p className="text-muted-foreground">
+            Discover suppliers in your area and browse their product catalog
+          </p>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-muted-foreground mb-4">Unable to load suppliers. Please check your connection.</p>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Retry
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

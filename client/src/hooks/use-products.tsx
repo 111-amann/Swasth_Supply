@@ -20,10 +20,11 @@ export function useProducts() {
   const queryClient = useQueryClient();
 
   // Fetch all products from Firestore
-  const { data: products = [], isLoading: loading } = useQuery({
+  const { data: products = [], isLoading: loading, error } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       try {
+        console.log("Attempting to fetch data from Firebase...");
         const productsRef = collection(db, "products");
         const q = query(productsRef, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
@@ -38,17 +39,18 @@ export function useProducts() {
           };
         }) as Product[];
         
+        console.log("Firebase data fetched:", products);
         return products;
       } catch (error) {
         console.error("Error fetching products from Firebase:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load products from Firebase.",
-          variant: "destructive",
-        });
-        return [];
+        // Don't show toast here - let components handle the error state
+        throw error; // Re-throw so React Query can handle it properly
       }
     },
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });
 
   // Create product mutation
@@ -182,9 +184,13 @@ export function useProducts() {
   return {
     products,
     loading,
+    error,
     createProduct,
     updateProduct,
     deleteProduct,
     getProductsBySupplierId,
+    isCreatingProduct: createProductMutation.isPending,
+    isUpdatingProduct: updateProductMutation.isPending,
+    isDeletingProduct: deleteProductMutation.isPending,
   };
 }

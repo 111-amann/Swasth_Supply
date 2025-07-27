@@ -54,7 +54,7 @@ export function ProductManagement() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { products, loading, createProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
@@ -175,6 +175,24 @@ export function ProductManagement() {
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Product Management</h2>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-muted-foreground mb-4">Unable to load products. Please check your connection.</p>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Retry
+            </Button>
+          </div>
         </div>
       </div>
     );
