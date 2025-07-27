@@ -27,7 +27,7 @@ function Router() {
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (user && !userProfile) {
+      if (user && !userProfile && !profileLoading) {
         setProfileLoading(true);
         try {
           console.log("Fetching user profile for:", user.uid);
@@ -56,7 +56,7 @@ function Router() {
     };
 
     fetchUserProfile();
-  }, [user, getDocuments]);
+  }, [user?.uid]); // Only depend on user.uid to prevent infinite loops
 
   if (loading) {
     return (
@@ -80,14 +80,19 @@ function Router() {
     );
   }
 
-  // Debug logging for authentication routing
-  console.log("Auth Debug:", {
+  // Debug logging for authentication routing  
+  const debugInfo = {
     user: user?.uid,
     userProfile,
     userType: userProfile?.userType,
     hasUser: !!user,
     hasProfile: !!userProfile
-  });
+  };
+  
+  // Only log periodically to avoid spam
+  if (Math.random() < 0.1) {
+    console.log("Auth Debug:", debugInfo);
+  }
 
   if (user && userProfile && userProfile.userType) {
     console.log("🔄 Routing based on userType:", userProfile.userType);
