@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AuthModal } from "@/components/auth-modal";
 import { ChatSupport } from "@/components/chat-support";
 import { AddSampleData } from "@/components/admin/add-sample-data";
+import { FirebaseDataViewer } from "@/components/debug/firebase-data-viewer";
 import { Store, MapPin, IndianRupee, Shield, Utensils, Truck } from "lucide-react";
 
 export default function Home() {
@@ -108,8 +109,9 @@ export default function Home() {
               </Button>
             </div>
             
-            {/* Add Sample Data Component */}
-            <div className="flex justify-center">
+            {/* Firebase Data Status and Sample Data Components */}
+            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <FirebaseDataViewer />
               <AddSampleData />
             </div>
           </div>
