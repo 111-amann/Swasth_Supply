@@ -31,6 +31,8 @@ export const products = pgTable("products", {
   minimumOrder: integer("minimum_order").default(1),
   deliveryTime: text("delivery_time").notNull(),
   imageUrl: text("image_url"),
+  supplierName: text("supplier_name"), // For Firebase compatibility
+  supplierLocation: text("supplier_location"), // For Firebase compatibility
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });

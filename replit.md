@@ -7,8 +7,11 @@ StreetSupply is a B2B marketplace application that connects street food vendors 
 ## Recent Changes (January 2025)
 
 - ✓ Successfully migrated from Replit Agent to Replit environment
-- ✓ Set up PostgreSQL database with Drizzle ORM schema migration
 - ✓ Configured Firebase authentication with user-provided API keys
+- ✓ Set up Firebase Firestore as primary database instead of PostgreSQL
+- ✓ Updated schema to support supplier information for Firebase compatibility
+- ✓ Added sample product data functionality for Firebase database
+- ✓ Created products display system fetching directly from Firebase
 - ✓ Added three new marketing pages: About, How It Works, and Support
 - ✓ Created responsive navigation with warm Indian design colors (orange/green)
 - ✓ Implemented mobile-friendly layouts with Hindi text elements

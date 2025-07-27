@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AuthModal } from "@/components/auth-modal";
 import { ChatSupport } from "@/components/chat-support";
+import { AddSampleData } from "@/components/admin/add-sample-data";
 import { Store, MapPin, IndianRupee, Shield, Utensils, Truck } from "lucide-react";
 
 export default function Home() {
@@ -84,7 +85,7 @@ export default function Home() {
               विश्वसनीय आपूर्तिकर्ताओं से जुड़ें • गुणवत्तापूर्ण सामग्री पाएं
             </p>
             
-            <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
               <Button
                 onClick={() => openAuthModal("vendor", "signup")}
                 className="bg-white text-primary px-8 py-6 rounded-xl text-lg font-semibold hover:bg-gray-100 shadow-lg h-auto"
@@ -105,6 +106,11 @@ export default function Home() {
                   <div className="text-sm text-green-100 font-normal">Sell to vendors</div>
                 </div>
               </Button>
+            </div>
+            
+            {/* Add Sample Data Component */}
+            <div className="flex justify-center">
+              <AddSampleData />
             </div>
           </div>
         </div>
