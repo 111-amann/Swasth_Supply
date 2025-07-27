@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Phone, Mail, ChevronDown, ChevronUp } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/header";
 
 const faqData = [
@@ -32,77 +29,9 @@ const faqData = [
 
 export default function Support() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    message: ""
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name || !formData.phone || !formData.message) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all fields before submitting.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      // Submit the support message to the backend
-      const response = await fetch('/api/support-messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
-          message: formData.message,
-          timestamp: new Date().toISOString(),
-          source: 'support_page'
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
-      
-      toast({
-        title: "Message Sent!",
-        description: "We'll get back to you within 24 hours. Thank you for contacting us!",
-      });
-      
-      // Clear form
-      setFormData({ name: "", phone: "", message: "" });
-    } catch (error) {
-      console.error('Support message error:', error);
-      toast({
-        title: "Something went wrong",
-        description: "Please try again or contact us on WhatsApp.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const openWhatsApp = () => {
@@ -174,119 +103,37 @@ export default function Support() {
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* FAQ Section */}
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center lg:text-left">
-              Frequently Asked Questions
-            </h2>
-            
-            <div className="space-y-4">
-              {faqData.map((faq, index) => (
-                <Card key={index} className="border-none shadow-lg hover:shadow-xl transition-all duration-300">
-                  <CardHeader 
-                    className="cursor-pointer p-6"
-                    onClick={() => toggleFaq(index)}
-                  >
-                    <CardTitle className="flex justify-between items-center text-lg font-semibold text-gray-900">
-                      <span className="pr-4">{faq.question}</span>
-                      {openFaq === index ? 
-                        <ChevronUp className="w-5 h-5 text-orange-600 flex-shrink-0" /> : 
-                        <ChevronDown className="w-5 h-5 text-orange-600 flex-shrink-0" />
-                      }
-                    </CardTitle>
-                  </CardHeader>
-                  
-                  {openFaq === index && (
-                    <CardContent className="px-6 pb-6 pt-0">
-                      <p className="text-gray-700 leading-relaxed text-lg">
-                        {faq.answer}
-                      </p>
-                    </CardContent>
-                  )}
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Contact Form */}
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center lg:text-left">
-              Send Us a Message
-            </h2>
-            
-            <Card className="border-none shadow-xl bg-white">
-              <CardContent className="p-8">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label htmlFor="name" className="block text-lg font-medium text-gray-900 mb-2">
-                      Your Name *
-                    </label>
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="Enter your full name"
-                      className="h-12 text-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="phone" className="block text-lg font-medium text-gray-900 mb-2">
-                      Phone Number *
-                    </label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="+91 XXXXX XXXXX"
-                      className="h-12 text-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="message" className="block text-lg font-medium text-gray-900 mb-2">
-                      Your Message *
-                    </label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      placeholder="Tell us how we can help you..."
-                      className="min-h-32 text-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 resize-none"
-                      required
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    disabled={isSubmitting}
-                    className="w-full h-12 text-lg bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 disabled:opacity-50"
-                  >
-                    {isSubmitting ? "Sending..." : "Send Message"}
-                  </Button>
-                </form>
-
-                <div className="mt-8 text-center">
-                  <p className="text-gray-600 mb-4">Need immediate help?</p>
-                  <Button 
-                    onClick={openWhatsApp}
-                    variant="outline" 
-                    className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white text-lg px-8"
-                  >
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    WhatsApp Us
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+        {/* FAQ Section */}
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Frequently Asked Questions
+          </h2>
+          
+          <div className="space-y-4">
+            {faqData.map((faq, index) => (
+              <Card key={index} className="border-none shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardHeader 
+                  className="cursor-pointer p-6"
+                  onClick={() => toggleFaq(index)}
+                >
+                  <CardTitle className="flex justify-between items-center text-lg font-semibold text-gray-900">
+                    <span className="pr-4">{faq.question}</span>
+                    {openFaq === index ? 
+                      <ChevronUp className="w-5 h-5 text-orange-600 flex-shrink-0" /> : 
+                      <ChevronDown className="w-5 h-5 text-orange-600 flex-shrink-0" />
+                    }
+                  </CardTitle>
+                </CardHeader>
+                
+                {openFaq === index && (
+                  <CardContent className="px-6 pb-6 pt-0">
+                    <p className="text-gray-700 leading-relaxed text-lg">
+                      {faq.answer}
+                    </p>
+                  </CardContent>
+                )}
+              </Card>
+            ))}
           </div>
         </div>
 

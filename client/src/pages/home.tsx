@@ -109,11 +109,7 @@ export default function Home() {
                   How it Works
                 </Button>
               </Link>
-              <Link href="/contact">
-                <Button variant="ghost" className="text-muted-foreground hover:text-primary">
-                  Contact
-                </Button>
-              </Link>
+
               <Link href="/support">
                 <Button variant="ghost" className="text-muted-foreground hover:text-primary">
                   Support
