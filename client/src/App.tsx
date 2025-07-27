@@ -14,6 +14,7 @@ import VendorDashboard from "@/pages/vendor-dashboard";
 import SupplierDashboard from "@/pages/supplier-dashboard";
 import About from "@/pages/about";
 import HowItWorks from "@/pages/how-it-works";
+import Contact from "@/pages/contact";
 import Support from "@/pages/support";
 import NotFound from "@/pages/not-found";
 
@@ -78,6 +79,7 @@ function Router() {
       <Route path="/products" component={ProductsPage} />
       <Route path="/about" component={About} />
       <Route path="/how-it-works" component={HowItWorks} />
+      <Route path="/contact" component={Contact} />
       <Route path="/support" component={Support} />
       <Route component={NotFound} />
     </Switch>

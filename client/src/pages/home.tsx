@@ -8,7 +8,8 @@ import { ChatSupport } from "@/components/chat-support";
 import { 
   Store, MapPin, IndianRupee, Shield, Utensils, Truck, Search, 
   CheckCircle, DollarSign, Clock, Star, Quote, ChevronRight,
-  Facebook, Instagram, Linkedin, MessageCircle, Globe, Languages
+  Facebook, Instagram, Linkedin, MessageCircle, Globe, Languages,
+  Users, Zap, TrendingUp, Award, Heart, Target, Sparkles, Rocket
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -69,9 +70,9 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-warm-gray">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-green-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-8">
@@ -171,29 +172,51 @@ export default function Home() {
                 विश्वसनीय स्थानीय आपूर्तिकर्ताओं से सीधे जुड़ें • पैसे बचाएं और अपना व्यापार बढ़ाएं
               </p>
               
-              <div className="grid gap-4 max-w-md mx-auto lg:mx-0 mb-8">
+              <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto lg:mx-0 mb-8">
                 <Button
                   onClick={() => openAuthModal("vendor", "signup")}
-                  className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-6 rounded-xl text-lg font-semibold shadow-lg h-auto transform hover:scale-105 transition-all duration-200"
+                  size="lg"
+                  className="bg-white text-orange-600 hover:bg-gray-100 font-semibold py-4 px-8 rounded-full shadow-xl transform hover:scale-105 transition-all duration-200"
                 >
-                  <Utensils className="mr-3" size={24} />
-                  <div>
-                    <div>I'm a Vendor – Buy Ingredients</div>
-                    <div className="text-sm text-orange-100 font-normal">Get wholesale rates</div>
-                  </div>
+                  <Users className="mr-2" size={20} />
+                  Join as Vendor
                 </Button>
                 <Button
                   onClick={() => openAuthModal("supplier", "signup")}
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 rounded-xl text-lg font-semibold shadow-lg h-auto transform hover:scale-105 transition-all duration-200"
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-orange-600 font-semibold py-4 px-8 rounded-full shadow-xl transform hover:scale-105 transition-all duration-200"
                 >
-                  <Truck className="mr-3" size={24} />
-                  <div>
-                    <div>I'm a Supplier – List Products</div>
-                    <div className="text-sm text-green-100 font-normal">Reach more customers</div>
-                  </div>
+                  <Truck className="mr-2" size={20} />
+                  Join as Supplier
                 </Button>
               </div>
-
+              
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-6 max-w-md mx-auto lg:mx-0">
+                <div className="text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <Sparkles className="text-amber-300" size={24} />
+                  </div>
+                  <div className="text-2xl font-bold">1000+</div>
+                  <div className="text-sm opacity-80">Happy Vendors</div>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <Rocket className="text-green-300" size={24} />
+                  </div>
+                  <div className="text-2xl font-bold">500+</div>
+                  <div className="text-sm opacity-80">Suppliers</div>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <Award className="text-yellow-300" size={24} />
+                  </div>
+                  <div className="text-2xl font-bold">4.8★</div>
+                  <div className="text-sm opacity-80">Rating</div>
+                </div>
+              </div>
+              
               {/* Trust Indicators */}
               <div className="flex flex-wrap justify-center lg:justify-start items-center gap-6 opacity-90">
                 <div className="flex items-center space-x-2 text-sm">

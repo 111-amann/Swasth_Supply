@@ -54,6 +54,16 @@ export function Header() {
                 How it Works
               </Button>
             </Link>
+            <Link href="/contact">
+              <Button 
+                variant="ghost" 
+                className={`text-muted-foreground hover:text-primary ${
+                  isActive('/contact') ? 'text-primary bg-primary/10' : ''
+                }`}
+              >
+                Contact
+              </Button>
+            </Link>
             <Link href="/support">
               <Button 
                 variant="ghost" 
